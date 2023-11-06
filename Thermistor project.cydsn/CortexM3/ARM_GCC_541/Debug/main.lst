@@ -1,0 +1,3255 @@
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 1
+
+
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"main.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.LCD_Print_Data,"ax",%progbits
+  20              		.align	2
+  21              		.global	LCD_Print_Data
+  22              		.thumb
+  23              		.thumb_func
+  24              		.type	LCD_Print_Data, %function
+  25              	LCD_Print_Data:
+  26              	.LFB64:
+  27              		.file 1 "main.c"
+   1:main.c        **** /* ========================================
+   2:main.c        ****  *
+   3:main.c        ****  * Copyright YOUR COMPANY, THE YEAR
+   4:main.c        ****  * All Rights Reserved
+   5:main.c        ****  * UNPUBLISHED, LICENSED SOFTWARE.
+   6:main.c        ****  *
+   7:main.c        ****  * CONFIDENTIAL AND PROPRIETARY INFORMATION
+   8:main.c        ****  * WHICH IS THE PROPERTY OF your company.
+   9:main.c        ****  *
+  10:main.c        ****  * ========================================
+  11:main.c        **** */
+  12:main.c        **** #include "project.h"
+  13:main.c        **** #include "math.h"
+  14:main.c        **** #include "float.h"
+  15:main.c        **** #include <stdio.h>
+  16:main.c        **** 
+  17:main.c        **** // value for r1 resistor
+  18:main.c        **** #define R1 10000
+  19:main.c        **** static float  R1_Voltage;
+  20:main.c        **** static float R1_Volt_Float;
+  21:main.c        **** static float R1_ADC_Result;
+  22:main.c        **** static float totalCurrent;
+  23:main.c        **** 
+  24:main.c        **** 
+  25:main.c        **** // thermistor values
+  26:main.c        **** static float thermistor_voltage;
+  27:main.c        **** static float thermistor_resistance;
+  28:main.c        **** static float thermistor_ADC_Result;
+  29:main.c        **** static float thermistor_Result_float;
+  30:main.c        **** // temperature 
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 2
+
+
+  31:main.c        **** static float Temperature;
+  32:main.c        **** static char buffer1[25];
+  33:main.c        **** static char buffer2[25];
+  34:main.c        **** static double A  = .0012264528;
+  35:main.c        **** static double B =  0.000219555231;
+  36:main.c        **** static double C = 0.000000348815838;
+  37:main.c        **** // declaring the prototype functions
+  38:main.c        **** 
+  39:main.c        **** void LCD_Init(void);
+  40:main.c        **** void LCD_Command( unsigned char data );
+  41:main.c        **** void LCD_Write_Data( unsigned char data);
+  42:main.c        **** void LCD_Print_Data(unsigned char data);
+  43:main.c        **** void LCD_Write_String(char *writedata, char length);
+  44:main.c        **** void LCD_Pulse(void);
+  45:main.c        **** void microSecondDelay( int delayTime);
+  46:main.c        **** void LCD_Write_Num(char8 *writedata,int length);
+  47:main.c        **** float thermistorResistance(void);
+  48:main.c        **** float therm_Temp(void);
+  49:main.c        **** 
+  50:main.c        **** 
+  51:main.c        **** typedef struct {
+  52:main.c        ****   char D4_Pin;
+  53:main.c        ****   char D5_Pin;
+  54:main.c        ****   char D6_Pin;
+  55:main.c        ****   char D7_Pin;
+  56:main.c        **** } Datapins;
+  57:main.c        **** Datapins DataLine;
+  58:main.c        **** 
+  59:main.c        **** void LCD_Print_Data(unsigned char data){
+  28              		.loc 1 59 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              	.LVL0:
+  33 0000 10B5     		push	{r4, lr}
+  34              		.cfi_def_cfa_offset 8
+  35              		.cfi_offset 4, -8
+  36              		.cfi_offset 14, -4
+  37 0002 0446     		mov	r4, r0
+  60:main.c        ****  // setting the pins for sending the data to the LCD Display
+  61:main.c        ****  
+  62:main.c        ****  // D4 pin = bit 4 = 0x10
+  63:main.c        ****  DataLine.D4_Pin = 0x10;
+  38              		.loc 1 63 0
+  39 0004 1022     		movs	r2, #16
+  40 0006 194B     		ldr	r3, .L11
+  41 0008 1A70     		strb	r2, [r3]
+  64:main.c        **** if((data & DataLine.D4_Pin) == 0x10){
+  42              		.loc 1 64 0
+  43 000a 10F0100F 		tst	r0, #16
+  44 000e 03D0     		beq	.L2
+  65:main.c        ****     D4_Pin_11_Write(1);
+  45              		.loc 1 65 0
+  46 0010 0120     		movs	r0, #1
+  47              	.LVL1:
+  48 0012 FFF7FEFF 		bl	D4_Pin_11_Write
+  49              	.LVL2:
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 3
+
+
+  50 0016 02E0     		b	.L3
+  51              	.LVL3:
+  52              	.L2:
+  66:main.c        ****  }
+  67:main.c        **** else{
+  68:main.c        ****      D4_Pin_11_Write(0);
+  53              		.loc 1 68 0
+  54 0018 0020     		movs	r0, #0
+  55              	.LVL4:
+  56 001a FFF7FEFF 		bl	D4_Pin_11_Write
+  57              	.LVL5:
+  58              	.L3:
+  69:main.c        ****         
+  70:main.c        **** }
+  71:main.c        **** // D5 pin = bit 5 = 0x20
+  72:main.c        **** DataLine.D5_Pin = 0x20;
+  59              		.loc 1 72 0
+  60 001e 2022     		movs	r2, #32
+  61 0020 124B     		ldr	r3, .L11
+  62 0022 5A70     		strb	r2, [r3, #1]
+  73:main.c        **** if ((data & DataLine.D5_Pin) == 0x20){
+  63              		.loc 1 73 0
+  64 0024 14F0200F 		tst	r4, #32
+  65 0028 03D0     		beq	.L4
+  74:main.c        ****      D5_Pin_12_Write(1);
+  66              		.loc 1 74 0
+  67 002a 0120     		movs	r0, #1
+  68 002c FFF7FEFF 		bl	D5_Pin_12_Write
+  69              	.LVL6:
+  70 0030 02E0     		b	.L5
+  71              	.L4:
+  75:main.c        **** }
+  76:main.c        **** else{
+  77:main.c        ****    D5_Pin_12_Write(0);
+  72              		.loc 1 77 0
+  73 0032 0020     		movs	r0, #0
+  74 0034 FFF7FEFF 		bl	D5_Pin_12_Write
+  75              	.LVL7:
+  76              	.L5:
+  78:main.c        **** }
+  79:main.c        **** // D6 pin = bit 6 = 0x40
+  80:main.c        **** DataLine.D6_Pin = 0x40;
+  77              		.loc 1 80 0
+  78 0038 4022     		movs	r2, #64
+  79 003a 0C4B     		ldr	r3, .L11
+  80 003c 9A70     		strb	r2, [r3, #2]
+  81:main.c        **** if ((data & DataLine.D6_Pin) == 0x40){
+  81              		.loc 1 81 0
+  82 003e 14F0400F 		tst	r4, #64
+  83 0042 03D0     		beq	.L6
+  82:main.c        ****     D6_Pin_13_Write(1);
+  84              		.loc 1 82 0
+  85 0044 0120     		movs	r0, #1
+  86 0046 FFF7FEFF 		bl	D6_Pin_13_Write
+  87              	.LVL8:
+  88 004a 02E0     		b	.L7
+  89              	.L6:
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 4
+
+
+  83:main.c        **** }
+  84:main.c        **** else{
+  85:main.c        ****     D6_Pin_13_Write(0);
+  90              		.loc 1 85 0
+  91 004c 0020     		movs	r0, #0
+  92 004e FFF7FEFF 		bl	D6_Pin_13_Write
+  93              	.LVL9:
+  94              	.L7:
+  86:main.c        **** }
+  87:main.c        **** 
+  88:main.c        **** // D7 pin = bit 7 = 0x80
+  89:main.c        **** DataLine.D7_Pin = 0x80;
+  95              		.loc 1 89 0
+  96 0052 8022     		movs	r2, #128
+  97 0054 054B     		ldr	r3, .L11
+  98 0056 DA70     		strb	r2, [r3, #3]
+  90:main.c        **** if ((data & DataLine.D7_Pin) == 0x80){
+  99              		.loc 1 90 0
+ 100 0058 1440     		ands	r4, r4, r2
+ 101 005a 1CB1     		cbz	r4, .L8
+  91:main.c        ****     D7_Pin_14_Write(1);
+ 102              		.loc 1 91 0
+ 103 005c 0120     		movs	r0, #1
+ 104 005e FFF7FEFF 		bl	D7_Pin_14_Write
+ 105              	.LVL10:
+ 106 0062 10BD     		pop	{r4, pc}
+ 107              	.L8:
+  92:main.c        **** }
+  93:main.c        **** else{
+  94:main.c        ****     D7_Pin_14_Write(0);
+ 108              		.loc 1 94 0
+ 109 0064 0020     		movs	r0, #0
+ 110 0066 FFF7FEFF 		bl	D7_Pin_14_Write
+ 111              	.LVL11:
+ 112 006a 10BD     		pop	{r4, pc}
+ 113              	.L12:
+ 114              		.align	2
+ 115              	.L11:
+ 116 006c 00000000 		.word	DataLine
+ 117              		.cfi_endproc
+ 118              	.LFE64:
+ 119              		.size	LCD_Print_Data, .-LCD_Print_Data
+ 120              		.section	.text.LCD_Pulse,"ax",%progbits
+ 121              		.align	2
+ 122              		.global	LCD_Pulse
+ 123              		.thumb
+ 124              		.thumb_func
+ 125              		.type	LCD_Pulse, %function
+ 126              	LCD_Pulse:
+ 127              	.LFB70:
+  95:main.c        **** }
+  96:main.c        **** }
+  97:main.c        **** 
+  98:main.c        **** 
+  99:main.c        **** 
+ 100:main.c        **** // making creating a structure needed to for data line access of LCD
+ 101:main.c        **** 
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 5
+
+
+ 102:main.c        **** 
+ 103:main.c        **** // building all the main functions for the program
+ 104:main.c        **** 
+ 105:main.c        **** void LCD_Init(void){
+ 106:main.c        ****   CyDelay(40u);
+ 107:main.c        ****   
+ 108:main.c        ****    LCD_Command(0x28);
+ 109:main.c        ****     
+ 110:main.c        ****    LCD_Command(0x10);
+ 111:main.c        ****    LCD_Command(0x0C);
+ 112:main.c        ****    LCD_Command(0x06);
+ 113:main.c        ****     CyDelay(5u);
+ 114:main.c        **** }
+ 115:main.c        **** 
+ 116:main.c        **** void LCD_Command(unsigned char data){
+ 117:main.c        ****     //LCD_Print_Data(data);
+ 118:main.c        ****     RS_Pin_4_Write(0);
+ 119:main.c        ****     R_W_Pin_5_Write(0);
+ 120:main.c        ****      LCD_Print_Data(data);
+ 121:main.c        ****     LCD_Pulse();
+ 122:main.c        ****     LCD_Print_Data(data << 4);
+ 123:main.c        ****    RS_Pin_4_Write(0);
+ 124:main.c        ****    R_W_Pin_5_Write(0);
+ 125:main.c        ****     LCD_Pulse();
+ 126:main.c        **** 
+ 127:main.c        **** }
+ 128:main.c        **** 
+ 129:main.c        **** void LCD_Write_Data(unsigned char data){
+ 130:main.c        ****     Enable_Pin_6_Write(0);
+ 131:main.c        ****     RS_Pin_4_Write(1);
+ 132:main.c        ****     R_W_Pin_5_Write(0);
+ 133:main.c        ****     CyDelayUs(0u);
+ 134:main.c        ****     LCD_Print_Data(0x00);
+ 135:main.c        ****     LCD_Print_Data(data);
+ 136:main.c        ****     LCD_Pulse();
+ 137:main.c        ****    // LCD_Print_Data(data <<4);
+ 138:main.c        ****     RS_Pin_4_Write(1);
+ 139:main.c        ****     R_W_Pin_5_Write(0);
+ 140:main.c        ****     LCD_Print_Data(data <<4);
+ 141:main.c        ****     LCD_Pulse();
+ 142:main.c        ****     
+ 143:main.c        **** }
+ 144:main.c        **** 
+ 145:main.c        **** 
+ 146:main.c        **** void LCD_Write_String(char *writedata,char length){
+ 147:main.c        ****     for ( unsigned int i = 0; i < length; i++){
+ 148:main.c        ****         LCD_Write_Data(writedata[i]);
+ 149:main.c        ****     }
+ 150:main.c        **** 
+ 151:main.c        **** }
+ 152:main.c        **** 
+ 153:main.c        **** void LCD_Write_Num(char8 *writedata,int length){
+ 154:main.c        ****     
+ 155:main.c        ****    
+ 156:main.c        ****     
+ 157:main.c        ****     for ( unsigned int i = 0; i < sizeof(length); i++){
+ 158:main.c        ****         LCD_Write_Data(writedata[i]);
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 6
+
+
+ 159:main.c        ****     }
+ 160:main.c        **** 
+ 161:main.c        **** }
+ 162:main.c        **** 
+ 163:main.c        **** void LCD_Pulse(void){
+ 128              		.loc 1 163 0
+ 129              		.cfi_startproc
+ 130              		@ args = 0, pretend = 0, frame = 0
+ 131              		@ frame_needed = 0, uses_anonymous_args = 0
+ 132 0000 08B5     		push	{r3, lr}
+ 133              		.cfi_def_cfa_offset 8
+ 134              		.cfi_offset 3, -8
+ 135              		.cfi_offset 14, -4
+ 164:main.c        ****  Enable_Pin_6_Write(1);
+ 136              		.loc 1 164 0
+ 137 0002 0120     		movs	r0, #1
+ 138 0004 FFF7FEFF 		bl	Enable_Pin_6_Write
+ 139              	.LVL12:
+ 165:main.c        **** CyDelay(1);
+ 140              		.loc 1 165 0
+ 141 0008 0120     		movs	r0, #1
+ 142 000a FFF7FEFF 		bl	CyDelay
+ 143              	.LVL13:
+ 166:main.c        **** Enable_Pin_6_Write(0);
+ 144              		.loc 1 166 0
+ 145 000e 0020     		movs	r0, #0
+ 146 0010 FFF7FEFF 		bl	Enable_Pin_6_Write
+ 147              	.LVL14:
+ 148 0014 08BD     		pop	{r3, pc}
+ 149              		.cfi_endproc
+ 150              	.LFE70:
+ 151              		.size	LCD_Pulse, .-LCD_Pulse
+ 152 0016 00BF     		.section	.text.LCD_Command,"ax",%progbits
+ 153              		.align	2
+ 154              		.global	LCD_Command
+ 155              		.thumb
+ 156              		.thumb_func
+ 157              		.type	LCD_Command, %function
+ 158              	LCD_Command:
+ 159              	.LFB66:
+ 116:main.c        ****     //LCD_Print_Data(data);
+ 160              		.loc 1 116 0
+ 161              		.cfi_startproc
+ 162              		@ args = 0, pretend = 0, frame = 0
+ 163              		@ frame_needed = 0, uses_anonymous_args = 0
+ 164              	.LVL15:
+ 165 0000 10B5     		push	{r4, lr}
+ 166              		.cfi_def_cfa_offset 8
+ 167              		.cfi_offset 4, -8
+ 168              		.cfi_offset 14, -4
+ 169 0002 0446     		mov	r4, r0
+ 118:main.c        ****     R_W_Pin_5_Write(0);
+ 170              		.loc 1 118 0
+ 171 0004 0020     		movs	r0, #0
+ 172              	.LVL16:
+ 173 0006 FFF7FEFF 		bl	RS_Pin_4_Write
+ 174              	.LVL17:
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 7
+
+
+ 119:main.c        ****      LCD_Print_Data(data);
+ 175              		.loc 1 119 0
+ 176 000a 0020     		movs	r0, #0
+ 177 000c FFF7FEFF 		bl	R_W_Pin_5_Write
+ 178              	.LVL18:
+ 120:main.c        ****     LCD_Pulse();
+ 179              		.loc 1 120 0
+ 180 0010 2046     		mov	r0, r4
+ 181 0012 FFF7FEFF 		bl	LCD_Print_Data
+ 182              	.LVL19:
+ 121:main.c        ****     LCD_Print_Data(data << 4);
+ 183              		.loc 1 121 0
+ 184 0016 FFF7FEFF 		bl	LCD_Pulse
+ 185              	.LVL20:
+ 122:main.c        ****    RS_Pin_4_Write(0);
+ 186              		.loc 1 122 0
+ 187 001a 2001     		lsls	r0, r4, #4
+ 188 001c 00F0F000 		and	r0, r0, #240
+ 189 0020 FFF7FEFF 		bl	LCD_Print_Data
+ 190              	.LVL21:
+ 123:main.c        ****    R_W_Pin_5_Write(0);
+ 191              		.loc 1 123 0
+ 192 0024 0020     		movs	r0, #0
+ 193 0026 FFF7FEFF 		bl	RS_Pin_4_Write
+ 194              	.LVL22:
+ 124:main.c        ****     LCD_Pulse();
+ 195              		.loc 1 124 0
+ 196 002a 0020     		movs	r0, #0
+ 197 002c FFF7FEFF 		bl	R_W_Pin_5_Write
+ 198              	.LVL23:
+ 125:main.c        **** 
+ 199              		.loc 1 125 0
+ 200 0030 FFF7FEFF 		bl	LCD_Pulse
+ 201              	.LVL24:
+ 202 0034 10BD     		pop	{r4, pc}
+ 203              		.cfi_endproc
+ 204              	.LFE66:
+ 205              		.size	LCD_Command, .-LCD_Command
+ 206 0036 00BF     		.section	.text.LCD_Init,"ax",%progbits
+ 207              		.align	2
+ 208              		.global	LCD_Init
+ 209              		.thumb
+ 210              		.thumb_func
+ 211              		.type	LCD_Init, %function
+ 212              	LCD_Init:
+ 213              	.LFB65:
+ 105:main.c        ****   CyDelay(40u);
+ 214              		.loc 1 105 0
+ 215              		.cfi_startproc
+ 216              		@ args = 0, pretend = 0, frame = 0
+ 217              		@ frame_needed = 0, uses_anonymous_args = 0
+ 218 0000 08B5     		push	{r3, lr}
+ 219              		.cfi_def_cfa_offset 8
+ 220              		.cfi_offset 3, -8
+ 221              		.cfi_offset 14, -4
+ 106:main.c        ****   
+ 222              		.loc 1 106 0
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 8
+
+
+ 223 0002 2820     		movs	r0, #40
+ 224 0004 FFF7FEFF 		bl	CyDelay
+ 225              	.LVL25:
+ 108:main.c        ****     
+ 226              		.loc 1 108 0
+ 227 0008 2820     		movs	r0, #40
+ 228 000a FFF7FEFF 		bl	LCD_Command
+ 229              	.LVL26:
+ 110:main.c        ****    LCD_Command(0x0C);
+ 230              		.loc 1 110 0
+ 231 000e 1020     		movs	r0, #16
+ 232 0010 FFF7FEFF 		bl	LCD_Command
+ 233              	.LVL27:
+ 111:main.c        ****    LCD_Command(0x06);
+ 234              		.loc 1 111 0
+ 235 0014 0C20     		movs	r0, #12
+ 236 0016 FFF7FEFF 		bl	LCD_Command
+ 237              	.LVL28:
+ 112:main.c        ****     CyDelay(5u);
+ 238              		.loc 1 112 0
+ 239 001a 0620     		movs	r0, #6
+ 240 001c FFF7FEFF 		bl	LCD_Command
+ 241              	.LVL29:
+ 113:main.c        **** }
+ 242              		.loc 1 113 0
+ 243 0020 0520     		movs	r0, #5
+ 244 0022 FFF7FEFF 		bl	CyDelay
+ 245              	.LVL30:
+ 246 0026 08BD     		pop	{r3, pc}
+ 247              		.cfi_endproc
+ 248              	.LFE65:
+ 249              		.size	LCD_Init, .-LCD_Init
+ 250              		.section	.text.LCD_Write_Data,"ax",%progbits
+ 251              		.align	2
+ 252              		.global	LCD_Write_Data
+ 253              		.thumb
+ 254              		.thumb_func
+ 255              		.type	LCD_Write_Data, %function
+ 256              	LCD_Write_Data:
+ 257              	.LFB67:
+ 129:main.c        ****     Enable_Pin_6_Write(0);
+ 258              		.loc 1 129 0
+ 259              		.cfi_startproc
+ 260              		@ args = 0, pretend = 0, frame = 0
+ 261              		@ frame_needed = 0, uses_anonymous_args = 0
+ 262              	.LVL31:
+ 263 0000 10B5     		push	{r4, lr}
+ 264              		.cfi_def_cfa_offset 8
+ 265              		.cfi_offset 4, -8
+ 266              		.cfi_offset 14, -4
+ 267 0002 0446     		mov	r4, r0
+ 130:main.c        ****     RS_Pin_4_Write(1);
+ 268              		.loc 1 130 0
+ 269 0004 0020     		movs	r0, #0
+ 270              	.LVL32:
+ 271 0006 FFF7FEFF 		bl	Enable_Pin_6_Write
+ 272              	.LVL33:
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 9
+
+
+ 131:main.c        ****     R_W_Pin_5_Write(0);
+ 273              		.loc 1 131 0
+ 274 000a 0120     		movs	r0, #1
+ 275 000c FFF7FEFF 		bl	RS_Pin_4_Write
+ 276              	.LVL34:
+ 132:main.c        ****     CyDelayUs(0u);
+ 277              		.loc 1 132 0
+ 278 0010 0020     		movs	r0, #0
+ 279 0012 FFF7FEFF 		bl	R_W_Pin_5_Write
+ 280              	.LVL35:
+ 133:main.c        ****     LCD_Print_Data(0x00);
+ 281              		.loc 1 133 0
+ 282 0016 0020     		movs	r0, #0
+ 283 0018 FFF7FEFF 		bl	CyDelayUs
+ 284              	.LVL36:
+ 134:main.c        ****     LCD_Print_Data(data);
+ 285              		.loc 1 134 0
+ 286 001c 0020     		movs	r0, #0
+ 287 001e FFF7FEFF 		bl	LCD_Print_Data
+ 288              	.LVL37:
+ 135:main.c        ****     LCD_Pulse();
+ 289              		.loc 1 135 0
+ 290 0022 2046     		mov	r0, r4
+ 291 0024 FFF7FEFF 		bl	LCD_Print_Data
+ 292              	.LVL38:
+ 136:main.c        ****    // LCD_Print_Data(data <<4);
+ 293              		.loc 1 136 0
+ 294 0028 FFF7FEFF 		bl	LCD_Pulse
+ 295              	.LVL39:
+ 138:main.c        ****     R_W_Pin_5_Write(0);
+ 296              		.loc 1 138 0
+ 297 002c 0120     		movs	r0, #1
+ 298 002e FFF7FEFF 		bl	RS_Pin_4_Write
+ 299              	.LVL40:
+ 139:main.c        ****     LCD_Print_Data(data <<4);
+ 300              		.loc 1 139 0
+ 301 0032 0020     		movs	r0, #0
+ 302 0034 FFF7FEFF 		bl	R_W_Pin_5_Write
+ 303              	.LVL41:
+ 140:main.c        ****     LCD_Pulse();
+ 304              		.loc 1 140 0
+ 305 0038 2001     		lsls	r0, r4, #4
+ 306 003a 00F0F000 		and	r0, r0, #240
+ 307 003e FFF7FEFF 		bl	LCD_Print_Data
+ 308              	.LVL42:
+ 141:main.c        ****     
+ 309              		.loc 1 141 0
+ 310 0042 FFF7FEFF 		bl	LCD_Pulse
+ 311              	.LVL43:
+ 312 0046 10BD     		pop	{r4, pc}
+ 313              		.cfi_endproc
+ 314              	.LFE67:
+ 315              		.size	LCD_Write_Data, .-LCD_Write_Data
+ 316              		.section	.text.LCD_Write_String,"ax",%progbits
+ 317              		.align	2
+ 318              		.global	LCD_Write_String
+ 319              		.thumb
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 10
+
+
+ 320              		.thumb_func
+ 321              		.type	LCD_Write_String, %function
+ 322              	LCD_Write_String:
+ 323              	.LFB68:
+ 146:main.c        ****     for ( unsigned int i = 0; i < length; i++){
+ 324              		.loc 1 146 0
+ 325              		.cfi_startproc
+ 326              		@ args = 0, pretend = 0, frame = 0
+ 327              		@ frame_needed = 0, uses_anonymous_args = 0
+ 328              	.LVL44:
+ 329 0000 70B5     		push	{r4, r5, r6, lr}
+ 330              		.cfi_def_cfa_offset 16
+ 331              		.cfi_offset 4, -16
+ 332              		.cfi_offset 5, -12
+ 333              		.cfi_offset 6, -8
+ 334              		.cfi_offset 14, -4
+ 335 0002 0646     		mov	r6, r0
+ 336 0004 0D46     		mov	r5, r1
+ 337              	.LVL45:
+ 338              	.LBB2:
+ 147:main.c        ****         LCD_Write_Data(writedata[i]);
+ 339              		.loc 1 147 0
+ 340 0006 0024     		movs	r4, #0
+ 341 0008 03E0     		b	.L22
+ 342              	.LVL46:
+ 343              	.L23:
+ 148:main.c        ****     }
+ 344              		.loc 1 148 0 discriminator 3
+ 345 000a 305D     		ldrb	r0, [r6, r4]	@ zero_extendqisi2
+ 346 000c FFF7FEFF 		bl	LCD_Write_Data
+ 347              	.LVL47:
+ 147:main.c        ****         LCD_Write_Data(writedata[i]);
+ 348              		.loc 1 147 0 discriminator 3
+ 349 0010 0134     		adds	r4, r4, #1
+ 350              	.LVL48:
+ 351              	.L22:
+ 147:main.c        ****         LCD_Write_Data(writedata[i]);
+ 352              		.loc 1 147 0 is_stmt 0 discriminator 1
+ 353 0012 AC42     		cmp	r4, r5
+ 354 0014 F9D3     		bcc	.L23
+ 355              	.LBE2:
+ 151:main.c        **** 
+ 356              		.loc 1 151 0 is_stmt 1
+ 357 0016 70BD     		pop	{r4, r5, r6, pc}
+ 358              		.cfi_endproc
+ 359              	.LFE68:
+ 360              		.size	LCD_Write_String, .-LCD_Write_String
+ 361              		.section	.text.LCD_Write_Num,"ax",%progbits
+ 362              		.align	2
+ 363              		.global	LCD_Write_Num
+ 364              		.thumb
+ 365              		.thumb_func
+ 366              		.type	LCD_Write_Num, %function
+ 367              	LCD_Write_Num:
+ 368              	.LFB69:
+ 153:main.c        ****     
+ 369              		.loc 1 153 0
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 11
+
+
+ 370              		.cfi_startproc
+ 371              		@ args = 0, pretend = 0, frame = 0
+ 372              		@ frame_needed = 0, uses_anonymous_args = 0
+ 373              	.LVL49:
+ 374 0000 38B5     		push	{r3, r4, r5, lr}
+ 375              		.cfi_def_cfa_offset 16
+ 376              		.cfi_offset 3, -16
+ 377              		.cfi_offset 4, -12
+ 378              		.cfi_offset 5, -8
+ 379              		.cfi_offset 14, -4
+ 380 0002 0546     		mov	r5, r0
+ 381              	.LVL50:
+ 382              	.LBB3:
+ 157:main.c        ****         LCD_Write_Data(writedata[i]);
+ 383              		.loc 1 157 0
+ 384 0004 0024     		movs	r4, #0
+ 385 0006 03E0     		b	.L26
+ 386              	.LVL51:
+ 387              	.L27:
+ 158:main.c        ****     }
+ 388              		.loc 1 158 0 discriminator 3
+ 389 0008 285D     		ldrb	r0, [r5, r4]	@ zero_extendqisi2
+ 390 000a FFF7FEFF 		bl	LCD_Write_Data
+ 391              	.LVL52:
+ 157:main.c        ****         LCD_Write_Data(writedata[i]);
+ 392              		.loc 1 157 0 discriminator 3
+ 393 000e 0134     		adds	r4, r4, #1
+ 394              	.LVL53:
+ 395              	.L26:
+ 157:main.c        ****         LCD_Write_Data(writedata[i]);
+ 396              		.loc 1 157 0 is_stmt 0 discriminator 1
+ 397 0010 032C     		cmp	r4, #3
+ 398 0012 F9D9     		bls	.L27
+ 399              	.LBE3:
+ 161:main.c        **** 
+ 400              		.loc 1 161 0 is_stmt 1
+ 401 0014 38BD     		pop	{r3, r4, r5, pc}
+ 402              		.cfi_endproc
+ 403              	.LFE69:
+ 404              		.size	LCD_Write_Num, .-LCD_Write_Num
+ 405 0016 00BF     		.section	.text.microSecondDelay,"ax",%progbits
+ 406              		.align	2
+ 407              		.global	microSecondDelay
+ 408              		.thumb
+ 409              		.thumb_func
+ 410              		.type	microSecondDelay, %function
+ 411              	microSecondDelay:
+ 412              	.LFB71:
+ 167:main.c        ****     
+ 168:main.c        **** }
+ 169:main.c        **** 
+ 170:main.c        **** void microSecondDelay( int delayTime){
+ 413              		.loc 1 170 0
+ 414              		.cfi_startproc
+ 415              		@ args = 0, pretend = 0, frame = 0
+ 416              		@ frame_needed = 0, uses_anonymous_args = 0
+ 417              		@ link register save eliminated.
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 12
+
+
+ 418              	.LVL54:
+ 419              	.LBB4:
+ 171:main.c        ****     for (int i = 0; i < delayTime; i++){
+ 420              		.loc 1 171 0
+ 421 0000 0023     		movs	r3, #0
+ 422 0002 00E0     		b	.L30
+ 423              	.LVL55:
+ 424              	.L31:
+ 425              		.loc 1 171 0 is_stmt 0 discriminator 3
+ 426 0004 0133     		adds	r3, r3, #1
+ 427              	.LVL56:
+ 428              	.L30:
+ 429              		.loc 1 171 0 discriminator 1
+ 430 0006 8342     		cmp	r3, r0
+ 431 0008 FCDB     		blt	.L31
+ 432              	.LBE4:
+ 172:main.c        ****         
+ 173:main.c        ****     }
+ 174:main.c        ****     
+ 175:main.c        **** }   
+ 433              		.loc 1 175 0 is_stmt 1
+ 434 000a 7047     		bx	lr
+ 435              		.cfi_endproc
+ 436              	.LFE71:
+ 437              		.size	microSecondDelay, .-microSecondDelay
+ 438              		.global	__aeabi_i2f
+ 439              		.global	__aeabi_f2iz
+ 440              		.global	__aeabi_fdiv
+ 441              		.section	.text.thermistorResistance,"ax",%progbits
+ 442              		.align	2
+ 443              		.global	thermistorResistance
+ 444              		.thumb
+ 445              		.thumb_func
+ 446              		.type	thermistorResistance, %function
+ 447              	thermistorResistance:
+ 448              	.LFB72:
+ 176:main.c        **** 
+ 177:main.c        **** float thermistorResistance(void){
+ 449              		.loc 1 177 0
+ 450              		.cfi_startproc
+ 451              		@ args = 0, pretend = 0, frame = 0
+ 452              		@ frame_needed = 0, uses_anonymous_args = 0
+ 453 0000 10B5     		push	{r4, lr}
+ 454              		.cfi_def_cfa_offset 8
+ 455              		.cfi_offset 4, -8
+ 456              		.cfi_offset 14, -4
+ 178:main.c        ****     // calculating the current for R1 resistor 
+ 179:main.c        ****     AMux_1_Select(0);
+ 457              		.loc 1 179 0
+ 458 0002 0020     		movs	r0, #0
+ 459 0004 FFF7FEFF 		bl	AMux_1_Select
+ 460              	.LVL57:
+ 180:main.c        ****     ADC_DelSig_1_StartConvert();
+ 461              		.loc 1 180 0
+ 462 0008 FFF7FEFF 		bl	ADC_DelSig_1_StartConvert
+ 463              	.LVL58:
+ 181:main.c        ****     ADC_DelSig_1_IsEndConversion(ADC_DelSig_1_WAIT_FOR_RESULT);
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 13
+
+
+ 464              		.loc 1 181 0
+ 465 000c 0020     		movs	r0, #0
+ 466 000e FFF7FEFF 		bl	ADC_DelSig_1_IsEndConversion
+ 467              	.LVL59:
+ 182:main.c        ****     R1_ADC_Result = (float) ADC_DelSig_1_GetResult16();
+ 468              		.loc 1 182 0
+ 469 0012 FFF7FEFF 		bl	ADC_DelSig_1_GetResult16
+ 470              	.LVL60:
+ 471 0016 FFF7FEFF 		bl	__aeabi_i2f
+ 472              	.LVL61:
+ 183:main.c        ****     R1_Volt_Float = (int16) ADC_DelSig_1_CountsTo_mVolts(R1_ADC_Result);
+ 473              		.loc 1 183 0
+ 474 001a FFF7FEFF 		bl	__aeabi_f2iz
+ 475              	.LVL62:
+ 476 001e FFF7FEFF 		bl	ADC_DelSig_1_CountsTo_mVolts
+ 477              	.LVL63:
+ 478 0022 FFF7FEFF 		bl	__aeabi_i2f
+ 479              	.LVL64:
+ 184:main.c        ****     R1_Voltage = (float) R1_Volt_Float; // voltage used to calculate the current of R1 and Thermist
+ 185:main.c        ****     totalCurrent = (R1_Voltage / R1);  // total current of the system 
+ 480              		.loc 1 185 0
+ 481 0026 0D49     		ldr	r1, .L34
+ 482 0028 FFF7FEFF 		bl	__aeabi_fdiv
+ 483              	.LVL65:
+ 484 002c 0C4C     		ldr	r4, .L34+4
+ 485 002e 2060     		str	r0, [r4]	@ float
+ 186:main.c        ****     
+ 187:main.c        ****     // calculating voltage for the thermistor 
+ 188:main.c        ****     AMux_1_Select(1);
+ 486              		.loc 1 188 0
+ 487 0030 0120     		movs	r0, #1
+ 488 0032 FFF7FEFF 		bl	AMux_1_Select
+ 489              	.LVL66:
+ 189:main.c        ****     ADC_DelSig_1_StartConvert();
+ 490              		.loc 1 189 0
+ 491 0036 FFF7FEFF 		bl	ADC_DelSig_1_StartConvert
+ 492              	.LVL67:
+ 190:main.c        ****     ADC_DelSig_1_IsEndConversion(ADC_DelSig_1_WAIT_FOR_RESULT);
+ 493              		.loc 1 190 0
+ 494 003a 0020     		movs	r0, #0
+ 495 003c FFF7FEFF 		bl	ADC_DelSig_1_IsEndConversion
+ 496              	.LVL68:
+ 191:main.c        ****     thermistor_ADC_Result = (float) ADC_DelSig_1_GetResult16();
+ 497              		.loc 1 191 0
+ 498 0040 FFF7FEFF 		bl	ADC_DelSig_1_GetResult16
+ 499              	.LVL69:
+ 500 0044 FFF7FEFF 		bl	__aeabi_i2f
+ 501              	.LVL70:
+ 192:main.c        ****     thermistor_Result_float = (int16) ADC_DelSig_1_CountsTo_mVolts(thermistor_ADC_Result);
+ 502              		.loc 1 192 0
+ 503 0048 FFF7FEFF 		bl	__aeabi_f2iz
+ 504              	.LVL71:
+ 505 004c FFF7FEFF 		bl	ADC_DelSig_1_CountsTo_mVolts
+ 506              	.LVL72:
+ 507 0050 FFF7FEFF 		bl	__aeabi_i2f
+ 508              	.LVL73:
+ 193:main.c        ****     thermistor_voltage = (float) thermistor_Result_float;
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 14
+
+
+ 194:main.c        ****     
+ 195:main.c        ****     // calculating thermistor resistance 
+ 196:main.c        ****     
+ 197:main.c        ****     thermistor_resistance = (thermistor_voltage / totalCurrent);
+ 509              		.loc 1 197 0
+ 510 0054 2168     		ldr	r1, [r4]	@ float
+ 511 0056 FFF7FEFF 		bl	__aeabi_fdiv
+ 512              	.LVL74:
+ 198:main.c        ****     
+ 199:main.c        ****     
+ 200:main.c        ****     
+ 201:main.c        ****  return  thermistor_resistance;
+ 202:main.c        **** }
+ 513              		.loc 1 202 0
+ 514 005a 10BD     		pop	{r4, pc}
+ 515              	.L35:
+ 516              		.align	2
+ 517              	.L34:
+ 518 005c 00401C46 		.word	1176256512
+ 519 0060 00000000 		.word	.LANCHOR0
+ 520              		.cfi_endproc
+ 521              	.LFE72:
+ 522              		.size	thermistorResistance, .-thermistorResistance
+ 523              		.global	__aeabi_f2d
+ 524              		.global	__aeabi_dmul
+ 525              		.global	__aeabi_dadd
+ 526              		.global	__aeabi_ddiv
+ 527              		.global	__aeabi_d2f
+ 528              		.global	__aeabi_dsub
+ 529              		.section	.text.therm_Temp,"ax",%progbits
+ 530              		.align	2
+ 531              		.global	therm_Temp
+ 532              		.thumb
+ 533              		.thumb_func
+ 534              		.type	therm_Temp, %function
+ 535              	therm_Temp:
+ 536              	.LFB73:
+ 203:main.c        **** 
+ 204:main.c        **** float therm_Temp(void){
+ 537              		.loc 1 204 0
+ 538              		.cfi_startproc
+ 539              		@ args = 0, pretend = 0, frame = 0
+ 540              		@ frame_needed = 0, uses_anonymous_args = 0
+ 541 0000 38B5     		push	{r3, r4, r5, lr}
+ 542              		.cfi_def_cfa_offset 16
+ 543              		.cfi_offset 3, -16
+ 544              		.cfi_offset 4, -12
+ 545              		.cfi_offset 5, -8
+ 546              		.cfi_offset 14, -4
+ 205:main.c        ****     
+ 206:main.c        ****     // calculating the temperature 
+ 207:main.c        ****     Temperature = 1 / (A + (B*log(thermistorResistance()))  + (C*pow(log(thermistorResistance()),3)
+ 547              		.loc 1 207 0
+ 548 0002 FFF7FEFF 		bl	thermistorResistance
+ 549              	.LVL75:
+ 550 0006 FFF7FEFF 		bl	__aeabi_f2d
+ 551              	.LVL76:
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 15
+
+
+ 552 000a FFF7FEFF 		bl	log
+ 553              	.LVL77:
+ 554 000e 22A3     		adr	r3, .L38
+ 555 0010 D3E90023 		ldrd	r2, [r3]
+ 556 0014 FFF7FEFF 		bl	__aeabi_dmul
+ 557              	.LVL78:
+ 558 0018 21A3     		adr	r3, .L38+8
+ 559 001a D3E90023 		ldrd	r2, [r3]
+ 560 001e FFF7FEFF 		bl	__aeabi_dadd
+ 561              	.LVL79:
+ 562 0022 0446     		mov	r4, r0
+ 563 0024 0D46     		mov	r5, r1
+ 564 0026 FFF7FEFF 		bl	thermistorResistance
+ 565              	.LVL80:
+ 566 002a FFF7FEFF 		bl	__aeabi_f2d
+ 567              	.LVL81:
+ 568 002e FFF7FEFF 		bl	log
+ 569              	.LVL82:
+ 570 0032 0022     		movs	r2, #0
+ 571 0034 204B     		ldr	r3, .L38+32
+ 572 0036 FFF7FEFF 		bl	pow
+ 573              	.LVL83:
+ 574 003a 1BA3     		adr	r3, .L38+16
+ 575 003c D3E90023 		ldrd	r2, [r3]
+ 576 0040 FFF7FEFF 		bl	__aeabi_dmul
+ 577              	.LVL84:
+ 578 0044 0246     		mov	r2, r0
+ 579 0046 0B46     		mov	r3, r1
+ 580 0048 2046     		mov	r0, r4
+ 581 004a 2946     		mov	r1, r5
+ 582 004c FFF7FEFF 		bl	__aeabi_dadd
+ 583              	.LVL85:
+ 584 0050 0246     		mov	r2, r0
+ 585 0052 0B46     		mov	r3, r1
+ 586 0054 0020     		movs	r0, #0
+ 587 0056 1949     		ldr	r1, .L38+36
+ 588 0058 FFF7FEFF 		bl	__aeabi_ddiv
+ 589              	.LVL86:
+ 590 005c FFF7FEFF 		bl	__aeabi_d2f
+ 591              	.LVL87:
+ 208:main.c        ****     Temperature = Temperature - 273.15;  // in celsius 
+ 592              		.loc 1 208 0
+ 593 0060 FFF7FEFF 		bl	__aeabi_f2d
+ 594              	.LVL88:
+ 595 0064 12A3     		adr	r3, .L38+24
+ 596 0066 D3E90023 		ldrd	r2, [r3]
+ 597 006a FFF7FEFF 		bl	__aeabi_dsub
+ 598              	.LVL89:
+ 599 006e FFF7FEFF 		bl	__aeabi_d2f
+ 600              	.LVL90:
+ 209:main.c        ****     Temperature = (Temperature * 9.0) / 5.0 + 32.0; // in farenheit
+ 601              		.loc 1 209 0
+ 602 0072 FFF7FEFF 		bl	__aeabi_f2d
+ 603              	.LVL91:
+ 604 0076 0022     		movs	r2, #0
+ 605 0078 114B     		ldr	r3, .L38+40
+ 606 007a FFF7FEFF 		bl	__aeabi_dmul
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 16
+
+
+ 607              	.LVL92:
+ 608 007e 0022     		movs	r2, #0
+ 609 0080 104B     		ldr	r3, .L38+44
+ 610 0082 FFF7FEFF 		bl	__aeabi_ddiv
+ 611              	.LVL93:
+ 612 0086 0022     		movs	r2, #0
+ 613 0088 0F4B     		ldr	r3, .L38+48
+ 614 008a FFF7FEFF 		bl	__aeabi_dadd
+ 615              	.LVL94:
+ 616 008e FFF7FEFF 		bl	__aeabi_d2f
+ 617              	.LVL95:
+ 210:main.c        ****     
+ 211:main.c        ****    
+ 212:main.c        ****     return  Temperature;
+ 213:main.c        **** }
+ 618              		.loc 1 213 0
+ 619 0092 38BD     		pop	{r3, r4, r5, pc}
+ 620              	.L39:
+ 621 0094 AFF30080 		.align	3
+ 622              	.L38:
+ 623 0098 FBDAD812 		.word	316201723
+ 624 009c 0DC72C3F 		.word	1059899149
+ 625 00a0 012EA1AA 		.word	-1432277503
+ 626 00a4 1D18543F 		.word	1062475805
+ 627 00a8 206A8247 		.word	1199729184
+ 628 00ac 9C68973E 		.word	1050110108
+ 629 00b0 66666666 		.word	1717986918
+ 630 00b4 66127140 		.word	1081152102
+ 631 00b8 00000840 		.word	1074266112
+ 632 00bc 0000F03F 		.word	1072693248
+ 633 00c0 00002240 		.word	1075970048
+ 634 00c4 00001440 		.word	1075052544
+ 635 00c8 00004040 		.word	1077936128
+ 636              		.cfi_endproc
+ 637              	.LFE73:
+ 638              		.size	therm_Temp, .-therm_Temp
+ 639              		.section	.text.main,"ax",%progbits
+ 640              		.align	2
+ 641              		.global	main
+ 642              		.thumb
+ 643              		.thumb_func
+ 644              		.type	main, %function
+ 645              	main:
+ 646              	.LFB74:
+ 214:main.c        **** 
+ 215:main.c        **** int main(void)
+ 216:main.c        **** {
+ 647              		.loc 1 216 0
+ 648              		.cfi_startproc
+ 649              		@ Volatile: function does not return.
+ 650              		@ args = 0, pretend = 0, frame = 0
+ 651              		@ frame_needed = 0, uses_anonymous_args = 0
+ 652 0000 08B5     		push	{r3, lr}
+ 653              		.cfi_def_cfa_offset 8
+ 654              		.cfi_offset 3, -8
+ 655              		.cfi_offset 14, -4
+ 217:main.c        ****     //GlobalIntEnable; /* Enable global interrupts. */
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 17
+
+
+ 218:main.c        ****    // start up functions for program LCD, AMUX and ADC
+ 219:main.c        ****     ADC_DelSig_1_Start();
+ 656              		.loc 1 219 0
+ 657 0002 FFF7FEFF 		bl	ADC_DelSig_1_Start
+ 658              	.LVL96:
+ 220:main.c        ****     AMux_1_Start();
+ 659              		.loc 1 220 0
+ 660 0006 FFF7FEFF 		bl	AMux_1_Start
+ 661              	.LVL97:
+ 221:main.c        ****     LCD_Init();
+ 662              		.loc 1 221 0
+ 663 000a FFF7FEFF 		bl	LCD_Init
+ 664              	.LVL98:
+ 665              	.L41:
+ 222:main.c        ****    
+ 223:main.c        ****    while(1){
+ 224:main.c        ****     //thermistorResistance();
+ 225:main.c        ****     //therm_Temp();
+ 226:main.c        ****      sprintf(buffer1, "Temperature:%.2f",therm_Temp());
+ 666              		.loc 1 226 0 discriminator 1
+ 667 000e FFF7FEFF 		bl	therm_Temp
+ 668              	.LVL99:
+ 669 0012 FFF7FEFF 		bl	__aeabi_f2d
+ 670              	.LVL100:
+ 671 0016 134C     		ldr	r4, .L43
+ 672 0018 251D     		adds	r5, r4, #4
+ 673 001a 0246     		mov	r2, r0
+ 674 001c 0B46     		mov	r3, r1
+ 675 001e 1249     		ldr	r1, .L43+4
+ 676 0020 2846     		mov	r0, r5
+ 677 0022 FFF7FEFF 		bl	sprintf
+ 678              	.LVL101:
+ 227:main.c        ****      sprintf(buffer2, "Resistance:%.2f",thermistorResistance());
+ 679              		.loc 1 227 0 discriminator 1
+ 680 0026 FFF7FEFF 		bl	thermistorResistance
+ 681              	.LVL102:
+ 682 002a FFF7FEFF 		bl	__aeabi_f2d
+ 683              	.LVL103:
+ 684 002e 2034     		adds	r4, r4, #32
+ 685 0030 0246     		mov	r2, r0
+ 686 0032 0B46     		mov	r3, r1
+ 687 0034 0D49     		ldr	r1, .L43+8
+ 688 0036 2046     		mov	r0, r4
+ 689 0038 FFF7FEFF 		bl	sprintf
+ 690              	.LVL104:
+ 228:main.c        ****     
+ 229:main.c        ****    LCD_Command(0x80);
+ 691              		.loc 1 229 0 discriminator 1
+ 692 003c 8020     		movs	r0, #128
+ 693 003e FFF7FEFF 		bl	LCD_Command
+ 694              	.LVL105:
+ 230:main.c        ****    LCD_Write_String(buffer1,22);
+ 695              		.loc 1 230 0 discriminator 1
+ 696 0042 1621     		movs	r1, #22
+ 697 0044 2846     		mov	r0, r5
+ 698 0046 FFF7FEFF 		bl	LCD_Write_String
+ 699              	.LVL106:
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 18
+
+
+ 231:main.c        ****    LCD_Command(0xC0);
+ 700              		.loc 1 231 0 discriminator 1
+ 701 004a C020     		movs	r0, #192
+ 702 004c FFF7FEFF 		bl	LCD_Command
+ 703              	.LVL107:
+ 232:main.c        ****    LCD_Write_String(buffer2,22);
+ 704              		.loc 1 232 0 discriminator 1
+ 705 0050 1621     		movs	r1, #22
+ 706 0052 2046     		mov	r0, r4
+ 707 0054 FFF7FEFF 		bl	LCD_Write_String
+ 708              	.LVL108:
+ 233:main.c        ****   
+ 234:main.c        ****     CyDelay(2000);
+ 709              		.loc 1 234 0 discriminator 1
+ 710 0058 4FF4FA60 		mov	r0, #2000
+ 711 005c FFF7FEFF 		bl	CyDelay
+ 712              	.LVL109:
+ 713 0060 D5E7     		b	.L41
+ 714              	.L44:
+ 715 0062 00BF     		.align	2
+ 716              	.L43:
+ 717 0064 00000000 		.word	.LANCHOR0
+ 718 0068 00000000 		.word	.LC0
+ 719 006c 14000000 		.word	.LC1
+ 720              		.cfi_endproc
+ 721              	.LFE74:
+ 722              		.size	main, .-main
+ 723              		.comm	DataLine,4,4
+ 724              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 725              		.align	2
+ 726              	.LC0:
+ 727 0000 54656D70 		.ascii	"Temperature:%.2f\000"
+ 727      65726174 
+ 727      7572653A 
+ 727      252E3266 
+ 727      00
+ 728 0011 000000   		.space	3
+ 729              	.LC1:
+ 730 0014 52657369 		.ascii	"Resistance:%.2f\000"
+ 730      7374616E 
+ 730      63653A25 
+ 730      2E326600 
+ 731              		.bss
+ 732              		.align	2
+ 733              		.set	.LANCHOR0,. + 0
+ 734              		.type	totalCurrent, %object
+ 735              		.size	totalCurrent, 4
+ 736              	totalCurrent:
+ 737 0000 00000000 		.space	4
+ 738              		.type	buffer1, %object
+ 739              		.size	buffer1, 25
+ 740              	buffer1:
+ 741 0004 00000000 		.space	25
+ 741      00000000 
+ 741      00000000 
+ 741      00000000 
+ 741      00000000 
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 19
+
+
+ 742 001d 000000   		.space	3
+ 743              		.type	buffer2, %object
+ 744              		.size	buffer2, 25
+ 745              	buffer2:
+ 746 0020 00000000 		.space	25
+ 746      00000000 
+ 746      00000000 
+ 746      00000000 
+ 746      00000000 
+ 747              		.text
+ 748              	.Letext0:
+ 749              		.file 2 "d:\\psoc creator\\4.4\\psoc creator\\import\\gnu\\arm\\5.4.1\\arm-none-eabi\\include\\mac
+ 750              		.file 3 "d:\\psoc creator\\4.4\\psoc creator\\import\\gnu\\arm\\5.4.1\\arm-none-eabi\\include\\sys
+ 751              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
+ 752              		.file 5 "Generated_Source\\PSoC5/core_cm3.h"
+ 753              		.file 6 "Generated_Source\\PSoC5/D4_Pin_11.h"
+ 754              		.file 7 "Generated_Source\\PSoC5/D5_Pin_12.h"
+ 755              		.file 8 "Generated_Source\\PSoC5/D6_Pin_13.h"
+ 756              		.file 9 "Generated_Source\\PSoC5/D7_Pin_14.h"
+ 757              		.file 10 "Generated_Source\\PSoC5/Enable_Pin_6.h"
+ 758              		.file 11 "Generated_Source\\PSoC5/CyLib.h"
+ 759              		.file 12 "Generated_Source\\PSoC5/RS_Pin_4.h"
+ 760              		.file 13 "Generated_Source\\PSoC5/R_W_Pin_5.h"
+ 761              		.file 14 "Generated_Source\\PSoC5/AMux_1.h"
+ 762              		.file 15 "Generated_Source\\PSoC5/ADC_DelSig_1.h"
+ 763              		.file 16 "d:\\psoc creator\\4.4\\psoc creator\\import\\gnu\\arm\\5.4.1\\arm-none-eabi\\include\\ma
+ 764              		.file 17 "d:\\psoc creator\\4.4\\psoc creator\\import\\gnu\\arm\\5.4.1\\arm-none-eabi\\include\\st
+ 765              		.section	.debug_info,"",%progbits
+ 766              	.Ldebug_info0:
+ 767 0000 A6080000 		.4byte	0x8a6
+ 768 0004 0400     		.2byte	0x4
+ 769 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 770 000a 04       		.byte	0x4
+ 771 000b 01       		.uleb128 0x1
+ 772 000c C3030000 		.4byte	.LASF67
+ 773 0010 0C       		.byte	0xc
+ 774 0011 DE020000 		.4byte	.LASF68
+ 775 0015 69000000 		.4byte	.LASF69
+ 776 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 777 001d 00000000 		.4byte	0
+ 778 0021 00000000 		.4byte	.Ldebug_line0
+ 779 0025 02       		.uleb128 0x2
+ 780 0026 01       		.byte	0x1
+ 781 0027 06       		.byte	0x6
+ 782 0028 00020000 		.4byte	.LASF0
+ 783 002c 02       		.uleb128 0x2
+ 784 002d 01       		.byte	0x1
+ 785 002e 08       		.byte	0x8
+ 786 002f DB010000 		.4byte	.LASF1
+ 787 0033 02       		.uleb128 0x2
+ 788 0034 02       		.byte	0x2
+ 789 0035 05       		.byte	0x5
+ 790 0036 B7000000 		.4byte	.LASF2
+ 791 003a 02       		.uleb128 0x2
+ 792 003b 02       		.byte	0x2
+ 793 003c 07       		.byte	0x7
+ 794 003d B3020000 		.4byte	.LASF3
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 20
+
+
+ 795 0041 03       		.uleb128 0x3
+ 796 0042 70030000 		.4byte	.LASF9
+ 797 0046 02       		.byte	0x2
+ 798 0047 3F       		.byte	0x3f
+ 799 0048 4C000000 		.4byte	0x4c
+ 800 004c 02       		.uleb128 0x2
+ 801 004d 04       		.byte	0x4
+ 802 004e 05       		.byte	0x5
+ 803 004f 65010000 		.4byte	.LASF4
+ 804 0053 02       		.uleb128 0x2
+ 805 0054 04       		.byte	0x4
+ 806 0055 07       		.byte	0x7
+ 807 0056 E5020000 		.4byte	.LASF5
+ 808 005a 02       		.uleb128 0x2
+ 809 005b 08       		.byte	0x8
+ 810 005c 05       		.byte	0x5
+ 811 005d 1E010000 		.4byte	.LASF6
+ 812 0061 02       		.uleb128 0x2
+ 813 0062 08       		.byte	0x8
+ 814 0063 07       		.byte	0x7
+ 815 0064 14020000 		.4byte	.LASF7
+ 816 0068 04       		.uleb128 0x4
+ 817 0069 04       		.byte	0x4
+ 818 006a 05       		.byte	0x5
+ 819 006b 696E7400 		.ascii	"int\000"
+ 820 006f 02       		.uleb128 0x2
+ 821 0070 04       		.byte	0x4
+ 822 0071 07       		.byte	0x7
+ 823 0072 2B020000 		.4byte	.LASF8
+ 824 0076 03       		.uleb128 0x3
+ 825 0077 AB020000 		.4byte	.LASF10
+ 826 007b 03       		.byte	0x3
+ 827 007c 2C       		.byte	0x2c
+ 828 007d 41000000 		.4byte	0x41
+ 829 0081 05       		.uleb128 0x5
+ 830 0082 E7000000 		.4byte	.LASF11
+ 831 0086 04       		.byte	0x4
+ 832 0087 EC01     		.2byte	0x1ec
+ 833 0089 33000000 		.4byte	0x33
+ 834 008d 02       		.uleb128 0x2
+ 835 008e 04       		.byte	0x4
+ 836 008f 04       		.byte	0x4
+ 837 0090 0D010000 		.4byte	.LASF12
+ 838 0094 02       		.uleb128 0x2
+ 839 0095 08       		.byte	0x8
+ 840 0096 04       		.byte	0x4
+ 841 0097 9C030000 		.4byte	.LASF13
+ 842 009b 05       		.uleb128 0x5
+ 843 009c 5E000000 		.4byte	.LASF14
+ 844 00a0 04       		.byte	0x4
+ 845 00a1 F901     		.2byte	0x1f9
+ 846 00a3 A7000000 		.4byte	0xa7
+ 847 00a7 02       		.uleb128 0x2
+ 848 00a8 01       		.byte	0x1
+ 849 00a9 08       		.byte	0x8
+ 850 00aa A6020000 		.4byte	.LASF15
+ 851 00ae 02       		.uleb128 0x2
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 21
+
+
+ 852 00af 08       		.byte	0x8
+ 853 00b0 04       		.byte	0x4
+ 854 00b1 B7010000 		.4byte	.LASF16
+ 855 00b5 02       		.uleb128 0x2
+ 856 00b6 04       		.byte	0x4
+ 857 00b7 07       		.byte	0x7
+ 858 00b8 44000000 		.4byte	.LASF17
+ 859 00bc 06       		.uleb128 0x6
+ 860 00bd 04       		.byte	0x4
+ 861 00be A7000000 		.4byte	0xa7
+ 862 00c2 07       		.uleb128 0x7
+ 863 00c3 A7000000 		.4byte	0xa7
+ 864 00c7 D2000000 		.4byte	0xd2
+ 865 00cb 08       		.uleb128 0x8
+ 866 00cc B5000000 		.4byte	0xb5
+ 867 00d0 18       		.byte	0x18
+ 868 00d1 00       		.byte	0
+ 869 00d2 09       		.uleb128 0x9
+ 870 00d3 04       		.byte	0x4
+ 871 00d4 01       		.byte	0x1
+ 872 00d5 33       		.byte	0x33
+ 873 00d6 0B010000 		.4byte	0x10b
+ 874 00da 0A       		.uleb128 0xa
+ 875 00db AF030000 		.4byte	.LASF18
+ 876 00df 01       		.byte	0x1
+ 877 00e0 34       		.byte	0x34
+ 878 00e1 A7000000 		.4byte	0xa7
+ 879 00e5 00       		.byte	0
+ 880 00e6 0A       		.uleb128 0xa
+ 881 00e7 ED000000 		.4byte	.LASF19
+ 882 00eb 01       		.byte	0x1
+ 883 00ec 35       		.byte	0x35
+ 884 00ed A7000000 		.4byte	0xa7
+ 885 00f1 01       		.byte	0x1
+ 886 00f2 0A       		.uleb128 0xa
+ 887 00f3 2C010000 		.4byte	.LASF20
+ 888 00f7 01       		.byte	0x1
+ 889 00f8 36       		.byte	0x36
+ 890 00f9 A7000000 		.4byte	0xa7
+ 891 00fd 02       		.byte	0x2
+ 892 00fe 0A       		.uleb128 0xa
+ 893 00ff 59040000 		.4byte	.LASF21
+ 894 0103 01       		.byte	0x1
+ 895 0104 37       		.byte	0x37
+ 896 0105 A7000000 		.4byte	0xa7
+ 897 0109 03       		.byte	0x3
+ 898 010a 00       		.byte	0
+ 899 010b 03       		.uleb128 0x3
+ 900 010c 48020000 		.4byte	.LASF22
+ 901 0110 01       		.byte	0x1
+ 902 0111 38       		.byte	0x38
+ 903 0112 D2000000 		.4byte	0xd2
+ 904 0116 0B       		.uleb128 0xb
+ 905 0117 33010000 		.4byte	.LASF23
+ 906 011b 01       		.byte	0x1
+ 907 011c 3B       		.byte	0x3b
+ 908 011d 00000000 		.4byte	.LFB64
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 22
+
+
+ 909 0121 70000000 		.4byte	.LFE64-.LFB64
+ 910 0125 01       		.uleb128 0x1
+ 911 0126 9C       		.byte	0x9c
+ 912 0127 CF010000 		.4byte	0x1cf
+ 913 012b 0C       		.uleb128 0xc
+ 914 012c D9020000 		.4byte	.LASF26
+ 915 0130 01       		.byte	0x1
+ 916 0131 3B       		.byte	0x3b
+ 917 0132 2C000000 		.4byte	0x2c
+ 918 0136 00000000 		.4byte	.LLST0
+ 919 013a 0D       		.uleb128 0xd
+ 920 013b 16000000 		.4byte	.LVL2
+ 921 013f D8070000 		.4byte	0x7d8
+ 922 0143 4D010000 		.4byte	0x14d
+ 923 0147 0E       		.uleb128 0xe
+ 924 0148 01       		.uleb128 0x1
+ 925 0149 50       		.byte	0x50
+ 926 014a 01       		.uleb128 0x1
+ 927 014b 31       		.byte	0x31
+ 928 014c 00       		.byte	0
+ 929 014d 0D       		.uleb128 0xd
+ 930 014e 1E000000 		.4byte	.LVL5
+ 931 0152 D8070000 		.4byte	0x7d8
+ 932 0156 60010000 		.4byte	0x160
+ 933 015a 0E       		.uleb128 0xe
+ 934 015b 01       		.uleb128 0x1
+ 935 015c 50       		.byte	0x50
+ 936 015d 01       		.uleb128 0x1
+ 937 015e 30       		.byte	0x30
+ 938 015f 00       		.byte	0
+ 939 0160 0D       		.uleb128 0xd
+ 940 0161 30000000 		.4byte	.LVL6
+ 941 0165 E3070000 		.4byte	0x7e3
+ 942 0169 73010000 		.4byte	0x173
+ 943 016d 0E       		.uleb128 0xe
+ 944 016e 01       		.uleb128 0x1
+ 945 016f 50       		.byte	0x50
+ 946 0170 01       		.uleb128 0x1
+ 947 0171 31       		.byte	0x31
+ 948 0172 00       		.byte	0
+ 949 0173 0D       		.uleb128 0xd
+ 950 0174 38000000 		.4byte	.LVL7
+ 951 0178 E3070000 		.4byte	0x7e3
+ 952 017c 86010000 		.4byte	0x186
+ 953 0180 0E       		.uleb128 0xe
+ 954 0181 01       		.uleb128 0x1
+ 955 0182 50       		.byte	0x50
+ 956 0183 01       		.uleb128 0x1
+ 957 0184 30       		.byte	0x30
+ 958 0185 00       		.byte	0
+ 959 0186 0D       		.uleb128 0xd
+ 960 0187 4A000000 		.4byte	.LVL8
+ 961 018b EE070000 		.4byte	0x7ee
+ 962 018f 99010000 		.4byte	0x199
+ 963 0193 0E       		.uleb128 0xe
+ 964 0194 01       		.uleb128 0x1
+ 965 0195 50       		.byte	0x50
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 23
+
+
+ 966 0196 01       		.uleb128 0x1
+ 967 0197 31       		.byte	0x31
+ 968 0198 00       		.byte	0
+ 969 0199 0D       		.uleb128 0xd
+ 970 019a 52000000 		.4byte	.LVL9
+ 971 019e EE070000 		.4byte	0x7ee
+ 972 01a2 AC010000 		.4byte	0x1ac
+ 973 01a6 0E       		.uleb128 0xe
+ 974 01a7 01       		.uleb128 0x1
+ 975 01a8 50       		.byte	0x50
+ 976 01a9 01       		.uleb128 0x1
+ 977 01aa 30       		.byte	0x30
+ 978 01ab 00       		.byte	0
+ 979 01ac 0D       		.uleb128 0xd
+ 980 01ad 62000000 		.4byte	.LVL10
+ 981 01b1 F9070000 		.4byte	0x7f9
+ 982 01b5 BF010000 		.4byte	0x1bf
+ 983 01b9 0E       		.uleb128 0xe
+ 984 01ba 01       		.uleb128 0x1
+ 985 01bb 50       		.byte	0x50
+ 986 01bc 01       		.uleb128 0x1
+ 987 01bd 31       		.byte	0x31
+ 988 01be 00       		.byte	0
+ 989 01bf 0F       		.uleb128 0xf
+ 990 01c0 6A000000 		.4byte	.LVL11
+ 991 01c4 F9070000 		.4byte	0x7f9
+ 992 01c8 0E       		.uleb128 0xe
+ 993 01c9 01       		.uleb128 0x1
+ 994 01ca 50       		.byte	0x50
+ 995 01cb 01       		.uleb128 0x1
+ 996 01cc 30       		.byte	0x30
+ 997 01cd 00       		.byte	0
+ 998 01ce 00       		.byte	0
+ 999 01cf 0B       		.uleb128 0xb
+ 1000 01d0 51020000 		.4byte	.LASF24
+ 1001 01d4 01       		.byte	0x1
+ 1002 01d5 A3       		.byte	0xa3
+ 1003 01d6 00000000 		.4byte	.LFB70
+ 1004 01da 16000000 		.4byte	.LFE70-.LFB70
+ 1005 01de 01       		.uleb128 0x1
+ 1006 01df 9C       		.byte	0x9c
+ 1007 01e0 1A020000 		.4byte	0x21a
+ 1008 01e4 0D       		.uleb128 0xd
+ 1009 01e5 08000000 		.4byte	.LVL12
+ 1010 01e9 04080000 		.4byte	0x804
+ 1011 01ed F7010000 		.4byte	0x1f7
+ 1012 01f1 0E       		.uleb128 0xe
+ 1013 01f2 01       		.uleb128 0x1
+ 1014 01f3 50       		.byte	0x50
+ 1015 01f4 01       		.uleb128 0x1
+ 1016 01f5 31       		.byte	0x31
+ 1017 01f6 00       		.byte	0
+ 1018 01f7 0D       		.uleb128 0xd
+ 1019 01f8 0E000000 		.4byte	.LVL13
+ 1020 01fc 0F080000 		.4byte	0x80f
+ 1021 0200 0A020000 		.4byte	0x20a
+ 1022 0204 0E       		.uleb128 0xe
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 24
+
+
+ 1023 0205 01       		.uleb128 0x1
+ 1024 0206 50       		.byte	0x50
+ 1025 0207 01       		.uleb128 0x1
+ 1026 0208 31       		.byte	0x31
+ 1027 0209 00       		.byte	0
+ 1028 020a 0F       		.uleb128 0xf
+ 1029 020b 14000000 		.4byte	.LVL14
+ 1030 020f 04080000 		.4byte	0x804
+ 1031 0213 0E       		.uleb128 0xe
+ 1032 0214 01       		.uleb128 0x1
+ 1033 0215 50       		.byte	0x50
+ 1034 0216 01       		.uleb128 0x1
+ 1035 0217 30       		.byte	0x30
+ 1036 0218 00       		.byte	0
+ 1037 0219 00       		.byte	0
+ 1038 021a 0B       		.uleb128 0xb
+ 1039 021b A3030000 		.4byte	.LASF25
+ 1040 021f 01       		.byte	0x1
+ 1041 0220 74       		.byte	0x74
+ 1042 0221 00000000 		.4byte	.LFB66
+ 1043 0225 36000000 		.4byte	.LFE66-.LFB66
+ 1044 0229 01       		.uleb128 0x1
+ 1045 022a 9C       		.byte	0x9c
+ 1046 022b CA020000 		.4byte	0x2ca
+ 1047 022f 0C       		.uleb128 0xc
+ 1048 0230 D9020000 		.4byte	.LASF26
+ 1049 0234 01       		.byte	0x1
+ 1050 0235 74       		.byte	0x74
+ 1051 0236 2C000000 		.4byte	0x2c
+ 1052 023a 3A000000 		.4byte	.LLST1
+ 1053 023e 0D       		.uleb128 0xd
+ 1054 023f 0A000000 		.4byte	.LVL17
+ 1055 0243 1A080000 		.4byte	0x81a
+ 1056 0247 51020000 		.4byte	0x251
+ 1057 024b 0E       		.uleb128 0xe
+ 1058 024c 01       		.uleb128 0x1
+ 1059 024d 50       		.byte	0x50
+ 1060 024e 01       		.uleb128 0x1
+ 1061 024f 30       		.byte	0x30
+ 1062 0250 00       		.byte	0
+ 1063 0251 0D       		.uleb128 0xd
+ 1064 0252 10000000 		.4byte	.LVL18
+ 1065 0256 25080000 		.4byte	0x825
+ 1066 025a 64020000 		.4byte	0x264
+ 1067 025e 0E       		.uleb128 0xe
+ 1068 025f 01       		.uleb128 0x1
+ 1069 0260 50       		.byte	0x50
+ 1070 0261 01       		.uleb128 0x1
+ 1071 0262 30       		.byte	0x30
+ 1072 0263 00       		.byte	0
+ 1073 0264 0D       		.uleb128 0xd
+ 1074 0265 16000000 		.4byte	.LVL19
+ 1075 0269 16010000 		.4byte	0x116
+ 1076 026d 78020000 		.4byte	0x278
+ 1077 0271 0E       		.uleb128 0xe
+ 1078 0272 01       		.uleb128 0x1
+ 1079 0273 50       		.byte	0x50
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 25
+
+
+ 1080 0274 02       		.uleb128 0x2
+ 1081 0275 74       		.byte	0x74
+ 1082 0276 00       		.sleb128 0
+ 1083 0277 00       		.byte	0
+ 1084 0278 10       		.uleb128 0x10
+ 1085 0279 1A000000 		.4byte	.LVL20
+ 1086 027d CF010000 		.4byte	0x1cf
+ 1087 0281 0D       		.uleb128 0xd
+ 1088 0282 24000000 		.4byte	.LVL21
+ 1089 0286 16010000 		.4byte	0x116
+ 1090 028a 9A020000 		.4byte	0x29a
+ 1091 028e 0E       		.uleb128 0xe
+ 1092 028f 01       		.uleb128 0x1
+ 1093 0290 50       		.byte	0x50
+ 1094 0291 07       		.uleb128 0x7
+ 1095 0292 74       		.byte	0x74
+ 1096 0293 00       		.sleb128 0
+ 1097 0294 34       		.byte	0x34
+ 1098 0295 24       		.byte	0x24
+ 1099 0296 08       		.byte	0x8
+ 1100 0297 F0       		.byte	0xf0
+ 1101 0298 1A       		.byte	0x1a
+ 1102 0299 00       		.byte	0
+ 1103 029a 0D       		.uleb128 0xd
+ 1104 029b 2A000000 		.4byte	.LVL22
+ 1105 029f 1A080000 		.4byte	0x81a
+ 1106 02a3 AD020000 		.4byte	0x2ad
+ 1107 02a7 0E       		.uleb128 0xe
+ 1108 02a8 01       		.uleb128 0x1
+ 1109 02a9 50       		.byte	0x50
+ 1110 02aa 01       		.uleb128 0x1
+ 1111 02ab 30       		.byte	0x30
+ 1112 02ac 00       		.byte	0
+ 1113 02ad 0D       		.uleb128 0xd
+ 1114 02ae 30000000 		.4byte	.LVL23
+ 1115 02b2 25080000 		.4byte	0x825
+ 1116 02b6 C0020000 		.4byte	0x2c0
+ 1117 02ba 0E       		.uleb128 0xe
+ 1118 02bb 01       		.uleb128 0x1
+ 1119 02bc 50       		.byte	0x50
+ 1120 02bd 01       		.uleb128 0x1
+ 1121 02be 30       		.byte	0x30
+ 1122 02bf 00       		.byte	0
+ 1123 02c0 10       		.uleb128 0x10
+ 1124 02c1 34000000 		.4byte	.LVL24
+ 1125 02c5 CF010000 		.4byte	0x1cf
+ 1126 02c9 00       		.byte	0
+ 1127 02ca 0B       		.uleb128 0xb
+ 1128 02cb C6020000 		.4byte	.LASF27
+ 1129 02cf 01       		.byte	0x1
+ 1130 02d0 69       		.byte	0x69
+ 1131 02d1 00000000 		.4byte	.LFB65
+ 1132 02d5 28000000 		.4byte	.LFE65-.LFB65
+ 1133 02d9 01       		.uleb128 0x1
+ 1134 02da 9C       		.byte	0x9c
+ 1135 02db 50030000 		.4byte	0x350
+ 1136 02df 0D       		.uleb128 0xd
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 26
+
+
+ 1137 02e0 08000000 		.4byte	.LVL25
+ 1138 02e4 0F080000 		.4byte	0x80f
+ 1139 02e8 F3020000 		.4byte	0x2f3
+ 1140 02ec 0E       		.uleb128 0xe
+ 1141 02ed 01       		.uleb128 0x1
+ 1142 02ee 50       		.byte	0x50
+ 1143 02ef 02       		.uleb128 0x2
+ 1144 02f0 08       		.byte	0x8
+ 1145 02f1 28       		.byte	0x28
+ 1146 02f2 00       		.byte	0
+ 1147 02f3 0D       		.uleb128 0xd
+ 1148 02f4 0E000000 		.4byte	.LVL26
+ 1149 02f8 1A020000 		.4byte	0x21a
+ 1150 02fc 07030000 		.4byte	0x307
+ 1151 0300 0E       		.uleb128 0xe
+ 1152 0301 01       		.uleb128 0x1
+ 1153 0302 50       		.byte	0x50
+ 1154 0303 02       		.uleb128 0x2
+ 1155 0304 08       		.byte	0x8
+ 1156 0305 28       		.byte	0x28
+ 1157 0306 00       		.byte	0
+ 1158 0307 0D       		.uleb128 0xd
+ 1159 0308 14000000 		.4byte	.LVL27
+ 1160 030c 1A020000 		.4byte	0x21a
+ 1161 0310 1A030000 		.4byte	0x31a
+ 1162 0314 0E       		.uleb128 0xe
+ 1163 0315 01       		.uleb128 0x1
+ 1164 0316 50       		.byte	0x50
+ 1165 0317 01       		.uleb128 0x1
+ 1166 0318 40       		.byte	0x40
+ 1167 0319 00       		.byte	0
+ 1168 031a 0D       		.uleb128 0xd
+ 1169 031b 1A000000 		.4byte	.LVL28
+ 1170 031f 1A020000 		.4byte	0x21a
+ 1171 0323 2D030000 		.4byte	0x32d
+ 1172 0327 0E       		.uleb128 0xe
+ 1173 0328 01       		.uleb128 0x1
+ 1174 0329 50       		.byte	0x50
+ 1175 032a 01       		.uleb128 0x1
+ 1176 032b 3C       		.byte	0x3c
+ 1177 032c 00       		.byte	0
+ 1178 032d 0D       		.uleb128 0xd
+ 1179 032e 20000000 		.4byte	.LVL29
+ 1180 0332 1A020000 		.4byte	0x21a
+ 1181 0336 40030000 		.4byte	0x340
+ 1182 033a 0E       		.uleb128 0xe
+ 1183 033b 01       		.uleb128 0x1
+ 1184 033c 50       		.byte	0x50
+ 1185 033d 01       		.uleb128 0x1
+ 1186 033e 36       		.byte	0x36
+ 1187 033f 00       		.byte	0
+ 1188 0340 0F       		.uleb128 0xf
+ 1189 0341 26000000 		.4byte	.LVL30
+ 1190 0345 0F080000 		.4byte	0x80f
+ 1191 0349 0E       		.uleb128 0xe
+ 1192 034a 01       		.uleb128 0x1
+ 1193 034b 50       		.byte	0x50
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 27
+
+
+ 1194 034c 01       		.uleb128 0x1
+ 1195 034d 35       		.byte	0x35
+ 1196 034e 00       		.byte	0
+ 1197 034f 00       		.byte	0
+ 1198 0350 0B       		.uleb128 0xb
+ 1199 0351 F1010000 		.4byte	.LASF28
+ 1200 0355 01       		.byte	0x1
+ 1201 0356 81       		.byte	0x81
+ 1202 0357 00000000 		.4byte	.LFB67
+ 1203 035b 48000000 		.4byte	.LFE67-.LFB67
+ 1204 035f 01       		.uleb128 0x1
+ 1205 0360 9C       		.byte	0x9c
+ 1206 0361 39040000 		.4byte	0x439
+ 1207 0365 0C       		.uleb128 0xc
+ 1208 0366 D9020000 		.4byte	.LASF26
+ 1209 036a 01       		.byte	0x1
+ 1210 036b 81       		.byte	0x81
+ 1211 036c 2C000000 		.4byte	0x2c
+ 1212 0370 5B000000 		.4byte	.LLST2
+ 1213 0374 0D       		.uleb128 0xd
+ 1214 0375 0A000000 		.4byte	.LVL33
+ 1215 0379 04080000 		.4byte	0x804
+ 1216 037d 87030000 		.4byte	0x387
+ 1217 0381 0E       		.uleb128 0xe
+ 1218 0382 01       		.uleb128 0x1
+ 1219 0383 50       		.byte	0x50
+ 1220 0384 01       		.uleb128 0x1
+ 1221 0385 30       		.byte	0x30
+ 1222 0386 00       		.byte	0
+ 1223 0387 0D       		.uleb128 0xd
+ 1224 0388 10000000 		.4byte	.LVL34
+ 1225 038c 1A080000 		.4byte	0x81a
+ 1226 0390 9A030000 		.4byte	0x39a
+ 1227 0394 0E       		.uleb128 0xe
+ 1228 0395 01       		.uleb128 0x1
+ 1229 0396 50       		.byte	0x50
+ 1230 0397 01       		.uleb128 0x1
+ 1231 0398 31       		.byte	0x31
+ 1232 0399 00       		.byte	0
+ 1233 039a 0D       		.uleb128 0xd
+ 1234 039b 16000000 		.4byte	.LVL35
+ 1235 039f 25080000 		.4byte	0x825
+ 1236 03a3 AD030000 		.4byte	0x3ad
+ 1237 03a7 0E       		.uleb128 0xe
+ 1238 03a8 01       		.uleb128 0x1
+ 1239 03a9 50       		.byte	0x50
+ 1240 03aa 01       		.uleb128 0x1
+ 1241 03ab 30       		.byte	0x30
+ 1242 03ac 00       		.byte	0
+ 1243 03ad 0D       		.uleb128 0xd
+ 1244 03ae 1C000000 		.4byte	.LVL36
+ 1245 03b2 30080000 		.4byte	0x830
+ 1246 03b6 C0030000 		.4byte	0x3c0
+ 1247 03ba 0E       		.uleb128 0xe
+ 1248 03bb 01       		.uleb128 0x1
+ 1249 03bc 50       		.byte	0x50
+ 1250 03bd 01       		.uleb128 0x1
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 28
+
+
+ 1251 03be 30       		.byte	0x30
+ 1252 03bf 00       		.byte	0
+ 1253 03c0 0D       		.uleb128 0xd
+ 1254 03c1 22000000 		.4byte	.LVL37
+ 1255 03c5 16010000 		.4byte	0x116
+ 1256 03c9 D3030000 		.4byte	0x3d3
+ 1257 03cd 0E       		.uleb128 0xe
+ 1258 03ce 01       		.uleb128 0x1
+ 1259 03cf 50       		.byte	0x50
+ 1260 03d0 01       		.uleb128 0x1
+ 1261 03d1 30       		.byte	0x30
+ 1262 03d2 00       		.byte	0
+ 1263 03d3 0D       		.uleb128 0xd
+ 1264 03d4 28000000 		.4byte	.LVL38
+ 1265 03d8 16010000 		.4byte	0x116
+ 1266 03dc E7030000 		.4byte	0x3e7
+ 1267 03e0 0E       		.uleb128 0xe
+ 1268 03e1 01       		.uleb128 0x1
+ 1269 03e2 50       		.byte	0x50
+ 1270 03e3 02       		.uleb128 0x2
+ 1271 03e4 74       		.byte	0x74
+ 1272 03e5 00       		.sleb128 0
+ 1273 03e6 00       		.byte	0
+ 1274 03e7 10       		.uleb128 0x10
+ 1275 03e8 2C000000 		.4byte	.LVL39
+ 1276 03ec CF010000 		.4byte	0x1cf
+ 1277 03f0 0D       		.uleb128 0xd
+ 1278 03f1 32000000 		.4byte	.LVL40
+ 1279 03f5 1A080000 		.4byte	0x81a
+ 1280 03f9 03040000 		.4byte	0x403
+ 1281 03fd 0E       		.uleb128 0xe
+ 1282 03fe 01       		.uleb128 0x1
+ 1283 03ff 50       		.byte	0x50
+ 1284 0400 01       		.uleb128 0x1
+ 1285 0401 31       		.byte	0x31
+ 1286 0402 00       		.byte	0
+ 1287 0403 0D       		.uleb128 0xd
+ 1288 0404 38000000 		.4byte	.LVL41
+ 1289 0408 25080000 		.4byte	0x825
+ 1290 040c 16040000 		.4byte	0x416
+ 1291 0410 0E       		.uleb128 0xe
+ 1292 0411 01       		.uleb128 0x1
+ 1293 0412 50       		.byte	0x50
+ 1294 0413 01       		.uleb128 0x1
+ 1295 0414 30       		.byte	0x30
+ 1296 0415 00       		.byte	0
+ 1297 0416 0D       		.uleb128 0xd
+ 1298 0417 42000000 		.4byte	.LVL42
+ 1299 041b 16010000 		.4byte	0x116
+ 1300 041f 2F040000 		.4byte	0x42f
+ 1301 0423 0E       		.uleb128 0xe
+ 1302 0424 01       		.uleb128 0x1
+ 1303 0425 50       		.byte	0x50
+ 1304 0426 07       		.uleb128 0x7
+ 1305 0427 74       		.byte	0x74
+ 1306 0428 00       		.sleb128 0
+ 1307 0429 34       		.byte	0x34
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 29
+
+
+ 1308 042a 24       		.byte	0x24
+ 1309 042b 08       		.byte	0x8
+ 1310 042c F0       		.byte	0xf0
+ 1311 042d 1A       		.byte	0x1a
+ 1312 042e 00       		.byte	0
+ 1313 042f 10       		.uleb128 0x10
+ 1314 0430 46000000 		.4byte	.LVL43
+ 1315 0434 CF010000 		.4byte	0x1cf
+ 1316 0438 00       		.byte	0
+ 1317 0439 0B       		.uleb128 0xb
+ 1318 043a 4D000000 		.4byte	.LASF29
+ 1319 043e 01       		.byte	0x1
+ 1320 043f 92       		.byte	0x92
+ 1321 0440 00000000 		.4byte	.LFB68
+ 1322 0444 18000000 		.4byte	.LFE68-.LFB68
+ 1323 0448 01       		.uleb128 0x1
+ 1324 0449 9C       		.byte	0x9c
+ 1325 044a 8D040000 		.4byte	0x48d
+ 1326 044e 0C       		.uleb128 0xc
+ 1327 044f CF020000 		.4byte	.LASF30
+ 1328 0453 01       		.byte	0x1
+ 1329 0454 92       		.byte	0x92
+ 1330 0455 BC000000 		.4byte	0xbc
+ 1331 0459 7C000000 		.4byte	.LLST3
+ 1332 045d 0C       		.uleb128 0xc
+ 1333 045e 60040000 		.4byte	.LASF31
+ 1334 0462 01       		.byte	0x1
+ 1335 0463 92       		.byte	0x92
+ 1336 0464 A7000000 		.4byte	0xa7
+ 1337 0468 9A000000 		.4byte	.LLST4
+ 1338 046c 11       		.uleb128 0x11
+ 1339 046d 06000000 		.4byte	.LBB2
+ 1340 0471 10000000 		.4byte	.LBE2-.LBB2
+ 1341 0475 12       		.uleb128 0x12
+ 1342 0476 6900     		.ascii	"i\000"
+ 1343 0478 01       		.byte	0x1
+ 1344 0479 93       		.byte	0x93
+ 1345 047a 6F000000 		.4byte	0x6f
+ 1346 047e BB000000 		.4byte	.LLST5
+ 1347 0482 10       		.uleb128 0x10
+ 1348 0483 10000000 		.4byte	.LVL47
+ 1349 0487 50030000 		.4byte	0x350
+ 1350 048b 00       		.byte	0
+ 1351 048c 00       		.byte	0
+ 1352 048d 0B       		.uleb128 0xb
+ 1353 048e C3010000 		.4byte	.LASF32
+ 1354 0492 01       		.byte	0x1
+ 1355 0493 99       		.byte	0x99
+ 1356 0494 00000000 		.4byte	.LFB69
+ 1357 0498 16000000 		.4byte	.LFE69-.LFB69
+ 1358 049c 01       		.uleb128 0x1
+ 1359 049d 9C       		.byte	0x9c
+ 1360 049e E1040000 		.4byte	0x4e1
+ 1361 04a2 0C       		.uleb128 0xc
+ 1362 04a3 CF020000 		.4byte	.LASF30
+ 1363 04a7 01       		.byte	0x1
+ 1364 04a8 99       		.byte	0x99
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 30
+
+
+ 1365 04a9 E1040000 		.4byte	0x4e1
+ 1366 04ad DA000000 		.4byte	.LLST6
+ 1367 04b1 0C       		.uleb128 0xc
+ 1368 04b2 60040000 		.4byte	.LASF31
+ 1369 04b6 01       		.byte	0x1
+ 1370 04b7 99       		.byte	0x99
+ 1371 04b8 68000000 		.4byte	0x68
+ 1372 04bc F8000000 		.4byte	.LLST7
+ 1373 04c0 11       		.uleb128 0x11
+ 1374 04c1 04000000 		.4byte	.LBB3
+ 1375 04c5 10000000 		.4byte	.LBE3-.LBB3
+ 1376 04c9 12       		.uleb128 0x12
+ 1377 04ca 6900     		.ascii	"i\000"
+ 1378 04cc 01       		.byte	0x1
+ 1379 04cd 9D       		.byte	0x9d
+ 1380 04ce 6F000000 		.4byte	0x6f
+ 1381 04d2 19010000 		.4byte	.LLST8
+ 1382 04d6 10       		.uleb128 0x10
+ 1383 04d7 0E000000 		.4byte	.LVL52
+ 1384 04db 50030000 		.4byte	0x350
+ 1385 04df 00       		.byte	0
+ 1386 04e0 00       		.byte	0
+ 1387 04e1 06       		.uleb128 0x6
+ 1388 04e2 04       		.byte	0x4
+ 1389 04e3 9B000000 		.4byte	0x9b
+ 1390 04e7 0B       		.uleb128 0xb
+ 1391 04e8 95020000 		.4byte	.LASF33
+ 1392 04ec 01       		.byte	0x1
+ 1393 04ed AA       		.byte	0xaa
+ 1394 04ee 00000000 		.4byte	.LFB71
+ 1395 04f2 0C000000 		.4byte	.LFE71-.LFB71
+ 1396 04f6 01       		.uleb128 0x1
+ 1397 04f7 9C       		.byte	0x9c
+ 1398 04f8 21050000 		.4byte	0x521
+ 1399 04fc 13       		.uleb128 0x13
+ 1400 04fd 81010000 		.4byte	.LASF34
+ 1401 0501 01       		.byte	0x1
+ 1402 0502 AA       		.byte	0xaa
+ 1403 0503 68000000 		.4byte	0x68
+ 1404 0507 01       		.uleb128 0x1
+ 1405 0508 50       		.byte	0x50
+ 1406 0509 11       		.uleb128 0x11
+ 1407 050a 00000000 		.4byte	.LBB4
+ 1408 050e 0A000000 		.4byte	.LBE4-.LBB4
+ 1409 0512 12       		.uleb128 0x12
+ 1410 0513 6900     		.ascii	"i\000"
+ 1411 0515 01       		.byte	0x1
+ 1412 0516 AB       		.byte	0xab
+ 1413 0517 68000000 		.4byte	0x68
+ 1414 051b 38010000 		.4byte	.LLST9
+ 1415 051f 00       		.byte	0
+ 1416 0520 00       		.byte	0
+ 1417 0521 14       		.uleb128 0x14
+ 1418 0522 2E030000 		.4byte	.LASF35
+ 1419 0526 01       		.byte	0x1
+ 1420 0527 B1       		.byte	0xb1
+ 1421 0528 8D000000 		.4byte	0x8d
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 31
+
+
+ 1422 052c 00000000 		.4byte	.LFB72
+ 1423 0530 64000000 		.4byte	.LFE72-.LFB72
+ 1424 0534 01       		.uleb128 0x1
+ 1425 0535 9C       		.byte	0x9c
+ 1426 0536 BD050000 		.4byte	0x5bd
+ 1427 053a 0D       		.uleb128 0xd
+ 1428 053b 08000000 		.4byte	.LVL57
+ 1429 053f 3B080000 		.4byte	0x83b
+ 1430 0543 4D050000 		.4byte	0x54d
+ 1431 0547 0E       		.uleb128 0xe
+ 1432 0548 01       		.uleb128 0x1
+ 1433 0549 50       		.byte	0x50
+ 1434 054a 01       		.uleb128 0x1
+ 1435 054b 30       		.byte	0x30
+ 1436 054c 00       		.byte	0
+ 1437 054d 10       		.uleb128 0x10
+ 1438 054e 0C000000 		.4byte	.LVL58
+ 1439 0552 46080000 		.4byte	0x846
+ 1440 0556 0D       		.uleb128 0xd
+ 1441 0557 12000000 		.4byte	.LVL59
+ 1442 055b 51080000 		.4byte	0x851
+ 1443 055f 69050000 		.4byte	0x569
+ 1444 0563 0E       		.uleb128 0xe
+ 1445 0564 01       		.uleb128 0x1
+ 1446 0565 50       		.byte	0x50
+ 1447 0566 01       		.uleb128 0x1
+ 1448 0567 30       		.byte	0x30
+ 1449 0568 00       		.byte	0
+ 1450 0569 10       		.uleb128 0x10
+ 1451 056a 16000000 		.4byte	.LVL60
+ 1452 056e 5C080000 		.4byte	0x85c
+ 1453 0572 10       		.uleb128 0x10
+ 1454 0573 22000000 		.4byte	.LVL63
+ 1455 0577 67080000 		.4byte	0x867
+ 1456 057b 0D       		.uleb128 0xd
+ 1457 057c 36000000 		.4byte	.LVL66
+ 1458 0580 3B080000 		.4byte	0x83b
+ 1459 0584 8E050000 		.4byte	0x58e
+ 1460 0588 0E       		.uleb128 0xe
+ 1461 0589 01       		.uleb128 0x1
+ 1462 058a 50       		.byte	0x50
+ 1463 058b 01       		.uleb128 0x1
+ 1464 058c 31       		.byte	0x31
+ 1465 058d 00       		.byte	0
+ 1466 058e 10       		.uleb128 0x10
+ 1467 058f 3A000000 		.4byte	.LVL67
+ 1468 0593 46080000 		.4byte	0x846
+ 1469 0597 0D       		.uleb128 0xd
+ 1470 0598 40000000 		.4byte	.LVL68
+ 1471 059c 51080000 		.4byte	0x851
+ 1472 05a0 AA050000 		.4byte	0x5aa
+ 1473 05a4 0E       		.uleb128 0xe
+ 1474 05a5 01       		.uleb128 0x1
+ 1475 05a6 50       		.byte	0x50
+ 1476 05a7 01       		.uleb128 0x1
+ 1477 05a8 30       		.byte	0x30
+ 1478 05a9 00       		.byte	0
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 32
+
+
+ 1479 05aa 10       		.uleb128 0x10
+ 1480 05ab 44000000 		.4byte	.LVL69
+ 1481 05af 5C080000 		.4byte	0x85c
+ 1482 05b3 10       		.uleb128 0x10
+ 1483 05b4 50000000 		.4byte	.LVL72
+ 1484 05b8 67080000 		.4byte	0x867
+ 1485 05bc 00       		.byte	0
+ 1486 05bd 14       		.uleb128 0x14
+ 1487 05be 13010000 		.4byte	.LASF36
+ 1488 05c2 01       		.byte	0x1
+ 1489 05c3 CC       		.byte	0xcc
+ 1490 05c4 8D000000 		.4byte	0x8d
+ 1491 05c8 00000000 		.4byte	.LFB73
+ 1492 05cc CC000000 		.4byte	.LFE73-.LFB73
+ 1493 05d0 01       		.uleb128 0x1
+ 1494 05d1 9C       		.byte	0x9c
+ 1495 05d2 04060000 		.4byte	0x604
+ 1496 05d6 10       		.uleb128 0x10
+ 1497 05d7 06000000 		.4byte	.LVL75
+ 1498 05db 21050000 		.4byte	0x521
+ 1499 05df 10       		.uleb128 0x10
+ 1500 05e0 0E000000 		.4byte	.LVL77
+ 1501 05e4 72080000 		.4byte	0x872
+ 1502 05e8 10       		.uleb128 0x10
+ 1503 05e9 2A000000 		.4byte	.LVL80
+ 1504 05ed 21050000 		.4byte	0x521
+ 1505 05f1 10       		.uleb128 0x10
+ 1506 05f2 32000000 		.4byte	.LVL82
+ 1507 05f6 72080000 		.4byte	0x872
+ 1508 05fa 10       		.uleb128 0x10
+ 1509 05fb 3A000000 		.4byte	.LVL83
+ 1510 05ff 7D080000 		.4byte	0x87d
+ 1511 0603 00       		.byte	0
+ 1512 0604 15       		.uleb128 0x15
+ 1513 0605 64000000 		.4byte	.LASF70
+ 1514 0609 01       		.byte	0x1
+ 1515 060a D7       		.byte	0xd7
+ 1516 060b 68000000 		.4byte	0x68
+ 1517 060f 00000000 		.4byte	.LFB74
+ 1518 0613 70000000 		.4byte	.LFE74-.LFB74
+ 1519 0617 01       		.uleb128 0x1
+ 1520 0618 9C       		.byte	0x9c
+ 1521 0619 F0060000 		.4byte	0x6f0
+ 1522 061d 10       		.uleb128 0x10
+ 1523 061e 06000000 		.4byte	.LVL96
+ 1524 0622 88080000 		.4byte	0x888
+ 1525 0626 10       		.uleb128 0x10
+ 1526 0627 0A000000 		.4byte	.LVL97
+ 1527 062b 93080000 		.4byte	0x893
+ 1528 062f 10       		.uleb128 0x10
+ 1529 0630 0E000000 		.4byte	.LVL98
+ 1530 0634 CA020000 		.4byte	0x2ca
+ 1531 0638 10       		.uleb128 0x10
+ 1532 0639 12000000 		.4byte	.LVL99
+ 1533 063d BD050000 		.4byte	0x5bd
+ 1534 0641 0D       		.uleb128 0xd
+ 1535 0642 26000000 		.4byte	.LVL101
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 33
+
+
+ 1536 0646 9E080000 		.4byte	0x89e
+ 1537 064a 5E060000 		.4byte	0x65e
+ 1538 064e 0E       		.uleb128 0xe
+ 1539 064f 01       		.uleb128 0x1
+ 1540 0650 50       		.byte	0x50
+ 1541 0651 02       		.uleb128 0x2
+ 1542 0652 75       		.byte	0x75
+ 1543 0653 00       		.sleb128 0
+ 1544 0654 0E       		.uleb128 0xe
+ 1545 0655 01       		.uleb128 0x1
+ 1546 0656 51       		.byte	0x51
+ 1547 0657 05       		.uleb128 0x5
+ 1548 0658 03       		.byte	0x3
+ 1549 0659 00000000 		.4byte	.LC0
+ 1550 065d 00       		.byte	0
+ 1551 065e 10       		.uleb128 0x10
+ 1552 065f 2A000000 		.4byte	.LVL102
+ 1553 0663 21050000 		.4byte	0x521
+ 1554 0667 0D       		.uleb128 0xd
+ 1555 0668 3C000000 		.4byte	.LVL104
+ 1556 066c 9E080000 		.4byte	0x89e
+ 1557 0670 84060000 		.4byte	0x684
+ 1558 0674 0E       		.uleb128 0xe
+ 1559 0675 01       		.uleb128 0x1
+ 1560 0676 50       		.byte	0x50
+ 1561 0677 02       		.uleb128 0x2
+ 1562 0678 74       		.byte	0x74
+ 1563 0679 00       		.sleb128 0
+ 1564 067a 0E       		.uleb128 0xe
+ 1565 067b 01       		.uleb128 0x1
+ 1566 067c 51       		.byte	0x51
+ 1567 067d 05       		.uleb128 0x5
+ 1568 067e 03       		.byte	0x3
+ 1569 067f 14000000 		.4byte	.LC1
+ 1570 0683 00       		.byte	0
+ 1571 0684 0D       		.uleb128 0xd
+ 1572 0685 42000000 		.4byte	.LVL105
+ 1573 0689 1A020000 		.4byte	0x21a
+ 1574 068d 98060000 		.4byte	0x698
+ 1575 0691 0E       		.uleb128 0xe
+ 1576 0692 01       		.uleb128 0x1
+ 1577 0693 50       		.byte	0x50
+ 1578 0694 02       		.uleb128 0x2
+ 1579 0695 09       		.byte	0x9
+ 1580 0696 80       		.byte	0x80
+ 1581 0697 00       		.byte	0
+ 1582 0698 0D       		.uleb128 0xd
+ 1583 0699 4A000000 		.4byte	.LVL106
+ 1584 069d 39040000 		.4byte	0x439
+ 1585 06a1 B1060000 		.4byte	0x6b1
+ 1586 06a5 0E       		.uleb128 0xe
+ 1587 06a6 01       		.uleb128 0x1
+ 1588 06a7 50       		.byte	0x50
+ 1589 06a8 02       		.uleb128 0x2
+ 1590 06a9 75       		.byte	0x75
+ 1591 06aa 00       		.sleb128 0
+ 1592 06ab 0E       		.uleb128 0xe
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 34
+
+
+ 1593 06ac 01       		.uleb128 0x1
+ 1594 06ad 51       		.byte	0x51
+ 1595 06ae 01       		.uleb128 0x1
+ 1596 06af 46       		.byte	0x46
+ 1597 06b0 00       		.byte	0
+ 1598 06b1 0D       		.uleb128 0xd
+ 1599 06b2 50000000 		.4byte	.LVL107
+ 1600 06b6 1A020000 		.4byte	0x21a
+ 1601 06ba C5060000 		.4byte	0x6c5
+ 1602 06be 0E       		.uleb128 0xe
+ 1603 06bf 01       		.uleb128 0x1
+ 1604 06c0 50       		.byte	0x50
+ 1605 06c1 02       		.uleb128 0x2
+ 1606 06c2 09       		.byte	0x9
+ 1607 06c3 C0       		.byte	0xc0
+ 1608 06c4 00       		.byte	0
+ 1609 06c5 0D       		.uleb128 0xd
+ 1610 06c6 58000000 		.4byte	.LVL108
+ 1611 06ca 39040000 		.4byte	0x439
+ 1612 06ce DE060000 		.4byte	0x6de
+ 1613 06d2 0E       		.uleb128 0xe
+ 1614 06d3 01       		.uleb128 0x1
+ 1615 06d4 50       		.byte	0x50
+ 1616 06d5 02       		.uleb128 0x2
+ 1617 06d6 74       		.byte	0x74
+ 1618 06d7 00       		.sleb128 0
+ 1619 06d8 0E       		.uleb128 0xe
+ 1620 06d9 01       		.uleb128 0x1
+ 1621 06da 51       		.byte	0x51
+ 1622 06db 01       		.uleb128 0x1
+ 1623 06dc 46       		.byte	0x46
+ 1624 06dd 00       		.byte	0
+ 1625 06de 0F       		.uleb128 0xf
+ 1626 06df 60000000 		.4byte	.LVL109
+ 1627 06e3 0F080000 		.4byte	0x80f
+ 1628 06e7 0E       		.uleb128 0xe
+ 1629 06e8 01       		.uleb128 0x1
+ 1630 06e9 50       		.byte	0x50
+ 1631 06ea 03       		.uleb128 0x3
+ 1632 06eb 0A       		.byte	0xa
+ 1633 06ec D007     		.2byte	0x7d0
+ 1634 06ee 00       		.byte	0
+ 1635 06ef 00       		.byte	0
+ 1636 06f0 16       		.uleb128 0x16
+ 1637 06f1 76010000 		.4byte	.LASF37
+ 1638 06f5 01       		.byte	0x1
+ 1639 06f6 13       		.byte	0x13
+ 1640 06f7 8D000000 		.4byte	0x8d
+ 1641 06fb 16       		.uleb128 0x16
+ 1642 06fc 10000000 		.4byte	.LASF38
+ 1643 0700 01       		.byte	0x1
+ 1644 0701 14       		.byte	0x14
+ 1645 0702 8D000000 		.4byte	0x8d
+ 1646 0706 16       		.uleb128 0x16
+ 1647 0707 1E000000 		.4byte	.LASF39
+ 1648 070b 01       		.byte	0x1
+ 1649 070c 15       		.byte	0x15
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 35
+
+
+ 1650 070d 8D000000 		.4byte	0x8d
+ 1651 0711 17       		.uleb128 0x17
+ 1652 0712 9B010000 		.4byte	.LASF40
+ 1653 0716 01       		.byte	0x1
+ 1654 0717 16       		.byte	0x16
+ 1655 0718 8D000000 		.4byte	0x8d
+ 1656 071c 05       		.uleb128 0x5
+ 1657 071d 03       		.byte	0x3
+ 1658 071e 00000000 		.4byte	totalCurrent
+ 1659 0722 16       		.uleb128 0x16
+ 1660 0723 05030000 		.4byte	.LASF41
+ 1661 0727 01       		.byte	0x1
+ 1662 0728 1A       		.byte	0x1a
+ 1663 0729 8D000000 		.4byte	0x8d
+ 1664 072d 16       		.uleb128 0x16
+ 1665 072e 7A030000 		.4byte	.LASF42
+ 1666 0732 01       		.byte	0x1
+ 1667 0733 1B       		.byte	0x1b
+ 1668 0734 8D000000 		.4byte	0x8d
+ 1669 0738 16       		.uleb128 0x16
+ 1670 0739 18030000 		.4byte	.LASF43
+ 1671 073d 01       		.byte	0x1
+ 1672 073e 1C       		.byte	0x1c
+ 1673 073f 8D000000 		.4byte	0x8d
+ 1674 0743 16       		.uleb128 0x16
+ 1675 0744 2C000000 		.4byte	.LASF44
+ 1676 0748 01       		.byte	0x1
+ 1677 0749 1D       		.byte	0x1d
+ 1678 074a 8D000000 		.4byte	0x8d
+ 1679 074e 16       		.uleb128 0x16
+ 1680 074f 90030000 		.4byte	.LASF45
+ 1681 0753 01       		.byte	0x1
+ 1682 0754 1F       		.byte	0x1f
+ 1683 0755 8D000000 		.4byte	0x8d
+ 1684 0759 17       		.uleb128 0x17
+ 1685 075a 0C020000 		.4byte	.LASF46
+ 1686 075e 01       		.byte	0x1
+ 1687 075f 20       		.byte	0x20
+ 1688 0760 C2000000 		.4byte	0xc2
+ 1689 0764 05       		.uleb128 0x5
+ 1690 0765 03       		.byte	0x3
+ 1691 0766 04000000 		.4byte	buffer1
+ 1692 076a 17       		.uleb128 0x17
+ 1693 076b 6E010000 		.4byte	.LASF47
+ 1694 076f 01       		.byte	0x1
+ 1695 0770 21       		.byte	0x21
+ 1696 0771 C2000000 		.4byte	0xc2
+ 1697 0775 05       		.uleb128 0x5
+ 1698 0776 03       		.byte	0x3
+ 1699 0777 20000000 		.4byte	buffer2
+ 1700 077b 18       		.uleb128 0x18
+ 1701 077c 4100     		.ascii	"A\000"
+ 1702 077e 01       		.byte	0x1
+ 1703 077f 22       		.byte	0x22
+ 1704 0780 8D070000 		.4byte	0x78d
+ 1705 0784 08       		.byte	0x8
+ 1706 0785 012EA1AA 		.4byte	0xaaa12e01
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 36
+
+
+ 1707 0789 1D18543F 		.4byte	0x3f54181d
+ 1708 078d 19       		.uleb128 0x19
+ 1709 078e 94000000 		.4byte	0x94
+ 1710 0792 18       		.uleb128 0x18
+ 1711 0793 4200     		.ascii	"B\000"
+ 1712 0795 01       		.byte	0x1
+ 1713 0796 23       		.byte	0x23
+ 1714 0797 8D070000 		.4byte	0x78d
+ 1715 079b 08       		.byte	0x8
+ 1716 079c FBDAD812 		.4byte	0x12d8dafb
+ 1717 07a0 0DC72C3F 		.4byte	0x3f2cc70d
+ 1718 07a4 18       		.uleb128 0x18
+ 1719 07a5 4300     		.ascii	"C\000"
+ 1720 07a7 01       		.byte	0x1
+ 1721 07a8 24       		.byte	0x24
+ 1722 07a9 8D070000 		.4byte	0x78d
+ 1723 07ad 08       		.byte	0x8
+ 1724 07ae 206A8247 		.4byte	0x47826a20
+ 1725 07b2 9C68973E 		.4byte	0x3e97689c
+ 1726 07b6 1A       		.uleb128 0x1a
+ 1727 07b7 B6030000 		.4byte	.LASF48
+ 1728 07bb 05       		.byte	0x5
+ 1729 07bc 1207     		.2byte	0x712
+ 1730 07be C2070000 		.4byte	0x7c2
+ 1731 07c2 1B       		.uleb128 0x1b
+ 1732 07c3 76000000 		.4byte	0x76
+ 1733 07c7 1C       		.uleb128 0x1c
+ 1734 07c8 C1000000 		.4byte	.LASF49
+ 1735 07cc 01       		.byte	0x1
+ 1736 07cd 39       		.byte	0x39
+ 1737 07ce 0B010000 		.4byte	0x10b
+ 1738 07d2 05       		.uleb128 0x5
+ 1739 07d3 03       		.byte	0x3
+ 1740 07d4 00000000 		.4byte	DataLine
+ 1741 07d8 1D       		.uleb128 0x1d
+ 1742 07d9 38020000 		.4byte	.LASF50
+ 1743 07dd 38020000 		.4byte	.LASF50
+ 1744 07e1 06       		.byte	0x6
+ 1745 07e2 26       		.byte	0x26
+ 1746 07e3 1D       		.uleb128 0x1d
+ 1747 07e4 00000000 		.4byte	.LASF51
+ 1748 07e8 00000000 		.4byte	.LASF51
+ 1749 07ec 07       		.byte	0x7
+ 1750 07ed 26       		.byte	0x26
+ 1751 07ee 1D       		.uleb128 0x1d
+ 1752 07ef 8B010000 		.4byte	.LASF52
+ 1753 07f3 8B010000 		.4byte	.LASF52
+ 1754 07f7 08       		.byte	0x8
+ 1755 07f8 26       		.byte	0x26
+ 1756 07f9 1D       		.uleb128 0x1d
+ 1757 07fa 43030000 		.4byte	.LASF53
+ 1758 07fe 43030000 		.4byte	.LASF53
+ 1759 0802 09       		.byte	0x9
+ 1760 0803 26       		.byte	0x26
+ 1761 0804 1D       		.uleb128 0x1d
+ 1762 0805 52010000 		.4byte	.LASF54
+ 1763 0809 52010000 		.4byte	.LASF54
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 37
+
+
+ 1764 080d 0A       		.byte	0xa
+ 1765 080e 26       		.byte	0x26
+ 1766 080f 1D       		.uleb128 0x1d
+ 1767 0810 51040000 		.4byte	.LASF55
+ 1768 0814 51040000 		.4byte	.LASF55
+ 1769 0818 0B       		.byte	0xb
+ 1770 0819 76       		.byte	0x76
+ 1771 081a 1D       		.uleb128 0x1d
+ 1772 081b A8010000 		.4byte	.LASF56
+ 1773 081f A8010000 		.4byte	.LASF56
+ 1774 0823 0C       		.byte	0xc
+ 1775 0824 26       		.byte	0x26
+ 1776 0825 1D       		.uleb128 0x1d
+ 1777 0826 42010000 		.4byte	.LASF57
+ 1778 082a 42010000 		.4byte	.LASF57
+ 1779 082e 0D       		.byte	0xd
+ 1780 082f 26       		.byte	0x26
+ 1781 0830 1D       		.uleb128 0x1d
+ 1782 0831 D1010000 		.4byte	.LASF58
+ 1783 0835 D1010000 		.4byte	.LASF58
+ 1784 0839 0B       		.byte	0xb
+ 1785 083a 77       		.byte	0x77
+ 1786 083b 1D       		.uleb128 0x1d
+ 1787 083c F7020000 		.4byte	.LASF59
+ 1788 0840 F7020000 		.4byte	.LASF59
+ 1789 0844 0E       		.byte	0xe
+ 1790 0845 57       		.byte	0x57
+ 1791 0846 1D       		.uleb128 0x1d
+ 1792 0847 5B020000 		.4byte	.LASF60
+ 1793 084b 5B020000 		.4byte	.LASF60
+ 1794 084f 0F       		.byte	0xf
+ 1795 0850 3D       		.byte	0x3d
+ 1796 0851 1D       		.uleb128 0x1d
+ 1797 0852 CA000000 		.4byte	.LASF61
+ 1798 0856 CA000000 		.4byte	.LASF61
+ 1799 085a 0F       		.byte	0xf
+ 1800 085b 3F       		.byte	0x3f
+ 1801 085c 1D       		.uleb128 0x1d
+ 1802 085d F4000000 		.4byte	.LASF62
+ 1803 0861 F4000000 		.4byte	.LASF62
+ 1804 0865 0F       		.byte	0xf
+ 1805 0866 41       		.byte	0x41
+ 1806 0867 1D       		.uleb128 0x1d
+ 1807 0868 53030000 		.4byte	.LASF63
+ 1808 086c 53030000 		.4byte	.LASF63
+ 1809 0870 0F       		.byte	0xf
+ 1810 0871 47       		.byte	0x47
+ 1811 0872 1E       		.uleb128 0x1e
+ 1812 0873 6C6F6700 		.ascii	"log\000"
+ 1813 0877 6C6F6700 		.ascii	"log\000"
+ 1814 087b 10       		.byte	0x10
+ 1815 087c 84       		.byte	0x84
+ 1816 087d 1E       		.uleb128 0x1e
+ 1817 087e 706F7700 		.ascii	"pow\000"
+ 1818 0882 706F7700 		.ascii	"pow\000"
+ 1819 0886 10       		.byte	0x10
+ 1820 0887 86       		.byte	0x86
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 38
+
+
+ 1821 0888 1D       		.uleb128 0x1d
+ 1822 0889 75020000 		.4byte	.LASF64
+ 1823 088d 75020000 		.4byte	.LASF64
+ 1824 0891 0F       		.byte	0xf
+ 1825 0892 3A       		.byte	0x3a
+ 1826 0893 1D       		.uleb128 0x1d
+ 1827 0894 88020000 		.4byte	.LASF65
+ 1828 0898 88020000 		.4byte	.LASF65
+ 1829 089c 0E       		.byte	0xe
+ 1830 089d 25       		.byte	0x25
+ 1831 089e 1D       		.uleb128 0x1d
+ 1832 089f E9010000 		.4byte	.LASF66
+ 1833 08a3 E9010000 		.4byte	.LASF66
+ 1834 08a7 11       		.byte	0x11
+ 1835 08a8 E7       		.byte	0xe7
+ 1836 08a9 00       		.byte	0
+ 1837              		.section	.debug_abbrev,"",%progbits
+ 1838              	.Ldebug_abbrev0:
+ 1839 0000 01       		.uleb128 0x1
+ 1840 0001 11       		.uleb128 0x11
+ 1841 0002 01       		.byte	0x1
+ 1842 0003 25       		.uleb128 0x25
+ 1843 0004 0E       		.uleb128 0xe
+ 1844 0005 13       		.uleb128 0x13
+ 1845 0006 0B       		.uleb128 0xb
+ 1846 0007 03       		.uleb128 0x3
+ 1847 0008 0E       		.uleb128 0xe
+ 1848 0009 1B       		.uleb128 0x1b
+ 1849 000a 0E       		.uleb128 0xe
+ 1850 000b 55       		.uleb128 0x55
+ 1851 000c 17       		.uleb128 0x17
+ 1852 000d 11       		.uleb128 0x11
+ 1853 000e 01       		.uleb128 0x1
+ 1854 000f 10       		.uleb128 0x10
+ 1855 0010 17       		.uleb128 0x17
+ 1856 0011 00       		.byte	0
+ 1857 0012 00       		.byte	0
+ 1858 0013 02       		.uleb128 0x2
+ 1859 0014 24       		.uleb128 0x24
+ 1860 0015 00       		.byte	0
+ 1861 0016 0B       		.uleb128 0xb
+ 1862 0017 0B       		.uleb128 0xb
+ 1863 0018 3E       		.uleb128 0x3e
+ 1864 0019 0B       		.uleb128 0xb
+ 1865 001a 03       		.uleb128 0x3
+ 1866 001b 0E       		.uleb128 0xe
+ 1867 001c 00       		.byte	0
+ 1868 001d 00       		.byte	0
+ 1869 001e 03       		.uleb128 0x3
+ 1870 001f 16       		.uleb128 0x16
+ 1871 0020 00       		.byte	0
+ 1872 0021 03       		.uleb128 0x3
+ 1873 0022 0E       		.uleb128 0xe
+ 1874 0023 3A       		.uleb128 0x3a
+ 1875 0024 0B       		.uleb128 0xb
+ 1876 0025 3B       		.uleb128 0x3b
+ 1877 0026 0B       		.uleb128 0xb
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 39
+
+
+ 1878 0027 49       		.uleb128 0x49
+ 1879 0028 13       		.uleb128 0x13
+ 1880 0029 00       		.byte	0
+ 1881 002a 00       		.byte	0
+ 1882 002b 04       		.uleb128 0x4
+ 1883 002c 24       		.uleb128 0x24
+ 1884 002d 00       		.byte	0
+ 1885 002e 0B       		.uleb128 0xb
+ 1886 002f 0B       		.uleb128 0xb
+ 1887 0030 3E       		.uleb128 0x3e
+ 1888 0031 0B       		.uleb128 0xb
+ 1889 0032 03       		.uleb128 0x3
+ 1890 0033 08       		.uleb128 0x8
+ 1891 0034 00       		.byte	0
+ 1892 0035 00       		.byte	0
+ 1893 0036 05       		.uleb128 0x5
+ 1894 0037 16       		.uleb128 0x16
+ 1895 0038 00       		.byte	0
+ 1896 0039 03       		.uleb128 0x3
+ 1897 003a 0E       		.uleb128 0xe
+ 1898 003b 3A       		.uleb128 0x3a
+ 1899 003c 0B       		.uleb128 0xb
+ 1900 003d 3B       		.uleb128 0x3b
+ 1901 003e 05       		.uleb128 0x5
+ 1902 003f 49       		.uleb128 0x49
+ 1903 0040 13       		.uleb128 0x13
+ 1904 0041 00       		.byte	0
+ 1905 0042 00       		.byte	0
+ 1906 0043 06       		.uleb128 0x6
+ 1907 0044 0F       		.uleb128 0xf
+ 1908 0045 00       		.byte	0
+ 1909 0046 0B       		.uleb128 0xb
+ 1910 0047 0B       		.uleb128 0xb
+ 1911 0048 49       		.uleb128 0x49
+ 1912 0049 13       		.uleb128 0x13
+ 1913 004a 00       		.byte	0
+ 1914 004b 00       		.byte	0
+ 1915 004c 07       		.uleb128 0x7
+ 1916 004d 01       		.uleb128 0x1
+ 1917 004e 01       		.byte	0x1
+ 1918 004f 49       		.uleb128 0x49
+ 1919 0050 13       		.uleb128 0x13
+ 1920 0051 01       		.uleb128 0x1
+ 1921 0052 13       		.uleb128 0x13
+ 1922 0053 00       		.byte	0
+ 1923 0054 00       		.byte	0
+ 1924 0055 08       		.uleb128 0x8
+ 1925 0056 21       		.uleb128 0x21
+ 1926 0057 00       		.byte	0
+ 1927 0058 49       		.uleb128 0x49
+ 1928 0059 13       		.uleb128 0x13
+ 1929 005a 2F       		.uleb128 0x2f
+ 1930 005b 0B       		.uleb128 0xb
+ 1931 005c 00       		.byte	0
+ 1932 005d 00       		.byte	0
+ 1933 005e 09       		.uleb128 0x9
+ 1934 005f 13       		.uleb128 0x13
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 40
+
+
+ 1935 0060 01       		.byte	0x1
+ 1936 0061 0B       		.uleb128 0xb
+ 1937 0062 0B       		.uleb128 0xb
+ 1938 0063 3A       		.uleb128 0x3a
+ 1939 0064 0B       		.uleb128 0xb
+ 1940 0065 3B       		.uleb128 0x3b
+ 1941 0066 0B       		.uleb128 0xb
+ 1942 0067 01       		.uleb128 0x1
+ 1943 0068 13       		.uleb128 0x13
+ 1944 0069 00       		.byte	0
+ 1945 006a 00       		.byte	0
+ 1946 006b 0A       		.uleb128 0xa
+ 1947 006c 0D       		.uleb128 0xd
+ 1948 006d 00       		.byte	0
+ 1949 006e 03       		.uleb128 0x3
+ 1950 006f 0E       		.uleb128 0xe
+ 1951 0070 3A       		.uleb128 0x3a
+ 1952 0071 0B       		.uleb128 0xb
+ 1953 0072 3B       		.uleb128 0x3b
+ 1954 0073 0B       		.uleb128 0xb
+ 1955 0074 49       		.uleb128 0x49
+ 1956 0075 13       		.uleb128 0x13
+ 1957 0076 38       		.uleb128 0x38
+ 1958 0077 0B       		.uleb128 0xb
+ 1959 0078 00       		.byte	0
+ 1960 0079 00       		.byte	0
+ 1961 007a 0B       		.uleb128 0xb
+ 1962 007b 2E       		.uleb128 0x2e
+ 1963 007c 01       		.byte	0x1
+ 1964 007d 3F       		.uleb128 0x3f
+ 1965 007e 19       		.uleb128 0x19
+ 1966 007f 03       		.uleb128 0x3
+ 1967 0080 0E       		.uleb128 0xe
+ 1968 0081 3A       		.uleb128 0x3a
+ 1969 0082 0B       		.uleb128 0xb
+ 1970 0083 3B       		.uleb128 0x3b
+ 1971 0084 0B       		.uleb128 0xb
+ 1972 0085 27       		.uleb128 0x27
+ 1973 0086 19       		.uleb128 0x19
+ 1974 0087 11       		.uleb128 0x11
+ 1975 0088 01       		.uleb128 0x1
+ 1976 0089 12       		.uleb128 0x12
+ 1977 008a 06       		.uleb128 0x6
+ 1978 008b 40       		.uleb128 0x40
+ 1979 008c 18       		.uleb128 0x18
+ 1980 008d 9742     		.uleb128 0x2117
+ 1981 008f 19       		.uleb128 0x19
+ 1982 0090 01       		.uleb128 0x1
+ 1983 0091 13       		.uleb128 0x13
+ 1984 0092 00       		.byte	0
+ 1985 0093 00       		.byte	0
+ 1986 0094 0C       		.uleb128 0xc
+ 1987 0095 05       		.uleb128 0x5
+ 1988 0096 00       		.byte	0
+ 1989 0097 03       		.uleb128 0x3
+ 1990 0098 0E       		.uleb128 0xe
+ 1991 0099 3A       		.uleb128 0x3a
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 41
+
+
+ 1992 009a 0B       		.uleb128 0xb
+ 1993 009b 3B       		.uleb128 0x3b
+ 1994 009c 0B       		.uleb128 0xb
+ 1995 009d 49       		.uleb128 0x49
+ 1996 009e 13       		.uleb128 0x13
+ 1997 009f 02       		.uleb128 0x2
+ 1998 00a0 17       		.uleb128 0x17
+ 1999 00a1 00       		.byte	0
+ 2000 00a2 00       		.byte	0
+ 2001 00a3 0D       		.uleb128 0xd
+ 2002 00a4 898201   		.uleb128 0x4109
+ 2003 00a7 01       		.byte	0x1
+ 2004 00a8 11       		.uleb128 0x11
+ 2005 00a9 01       		.uleb128 0x1
+ 2006 00aa 31       		.uleb128 0x31
+ 2007 00ab 13       		.uleb128 0x13
+ 2008 00ac 01       		.uleb128 0x1
+ 2009 00ad 13       		.uleb128 0x13
+ 2010 00ae 00       		.byte	0
+ 2011 00af 00       		.byte	0
+ 2012 00b0 0E       		.uleb128 0xe
+ 2013 00b1 8A8201   		.uleb128 0x410a
+ 2014 00b4 00       		.byte	0
+ 2015 00b5 02       		.uleb128 0x2
+ 2016 00b6 18       		.uleb128 0x18
+ 2017 00b7 9142     		.uleb128 0x2111
+ 2018 00b9 18       		.uleb128 0x18
+ 2019 00ba 00       		.byte	0
+ 2020 00bb 00       		.byte	0
+ 2021 00bc 0F       		.uleb128 0xf
+ 2022 00bd 898201   		.uleb128 0x4109
+ 2023 00c0 01       		.byte	0x1
+ 2024 00c1 11       		.uleb128 0x11
+ 2025 00c2 01       		.uleb128 0x1
+ 2026 00c3 31       		.uleb128 0x31
+ 2027 00c4 13       		.uleb128 0x13
+ 2028 00c5 00       		.byte	0
+ 2029 00c6 00       		.byte	0
+ 2030 00c7 10       		.uleb128 0x10
+ 2031 00c8 898201   		.uleb128 0x4109
+ 2032 00cb 00       		.byte	0
+ 2033 00cc 11       		.uleb128 0x11
+ 2034 00cd 01       		.uleb128 0x1
+ 2035 00ce 31       		.uleb128 0x31
+ 2036 00cf 13       		.uleb128 0x13
+ 2037 00d0 00       		.byte	0
+ 2038 00d1 00       		.byte	0
+ 2039 00d2 11       		.uleb128 0x11
+ 2040 00d3 0B       		.uleb128 0xb
+ 2041 00d4 01       		.byte	0x1
+ 2042 00d5 11       		.uleb128 0x11
+ 2043 00d6 01       		.uleb128 0x1
+ 2044 00d7 12       		.uleb128 0x12
+ 2045 00d8 06       		.uleb128 0x6
+ 2046 00d9 00       		.byte	0
+ 2047 00da 00       		.byte	0
+ 2048 00db 12       		.uleb128 0x12
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 42
+
+
+ 2049 00dc 34       		.uleb128 0x34
+ 2050 00dd 00       		.byte	0
+ 2051 00de 03       		.uleb128 0x3
+ 2052 00df 08       		.uleb128 0x8
+ 2053 00e0 3A       		.uleb128 0x3a
+ 2054 00e1 0B       		.uleb128 0xb
+ 2055 00e2 3B       		.uleb128 0x3b
+ 2056 00e3 0B       		.uleb128 0xb
+ 2057 00e4 49       		.uleb128 0x49
+ 2058 00e5 13       		.uleb128 0x13
+ 2059 00e6 02       		.uleb128 0x2
+ 2060 00e7 17       		.uleb128 0x17
+ 2061 00e8 00       		.byte	0
+ 2062 00e9 00       		.byte	0
+ 2063 00ea 13       		.uleb128 0x13
+ 2064 00eb 05       		.uleb128 0x5
+ 2065 00ec 00       		.byte	0
+ 2066 00ed 03       		.uleb128 0x3
+ 2067 00ee 0E       		.uleb128 0xe
+ 2068 00ef 3A       		.uleb128 0x3a
+ 2069 00f0 0B       		.uleb128 0xb
+ 2070 00f1 3B       		.uleb128 0x3b
+ 2071 00f2 0B       		.uleb128 0xb
+ 2072 00f3 49       		.uleb128 0x49
+ 2073 00f4 13       		.uleb128 0x13
+ 2074 00f5 02       		.uleb128 0x2
+ 2075 00f6 18       		.uleb128 0x18
+ 2076 00f7 00       		.byte	0
+ 2077 00f8 00       		.byte	0
+ 2078 00f9 14       		.uleb128 0x14
+ 2079 00fa 2E       		.uleb128 0x2e
+ 2080 00fb 01       		.byte	0x1
+ 2081 00fc 3F       		.uleb128 0x3f
+ 2082 00fd 19       		.uleb128 0x19
+ 2083 00fe 03       		.uleb128 0x3
+ 2084 00ff 0E       		.uleb128 0xe
+ 2085 0100 3A       		.uleb128 0x3a
+ 2086 0101 0B       		.uleb128 0xb
+ 2087 0102 3B       		.uleb128 0x3b
+ 2088 0103 0B       		.uleb128 0xb
+ 2089 0104 27       		.uleb128 0x27
+ 2090 0105 19       		.uleb128 0x19
+ 2091 0106 49       		.uleb128 0x49
+ 2092 0107 13       		.uleb128 0x13
+ 2093 0108 11       		.uleb128 0x11
+ 2094 0109 01       		.uleb128 0x1
+ 2095 010a 12       		.uleb128 0x12
+ 2096 010b 06       		.uleb128 0x6
+ 2097 010c 40       		.uleb128 0x40
+ 2098 010d 18       		.uleb128 0x18
+ 2099 010e 9642     		.uleb128 0x2116
+ 2100 0110 19       		.uleb128 0x19
+ 2101 0111 01       		.uleb128 0x1
+ 2102 0112 13       		.uleb128 0x13
+ 2103 0113 00       		.byte	0
+ 2104 0114 00       		.byte	0
+ 2105 0115 15       		.uleb128 0x15
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 43
+
+
+ 2106 0116 2E       		.uleb128 0x2e
+ 2107 0117 01       		.byte	0x1
+ 2108 0118 3F       		.uleb128 0x3f
+ 2109 0119 19       		.uleb128 0x19
+ 2110 011a 03       		.uleb128 0x3
+ 2111 011b 0E       		.uleb128 0xe
+ 2112 011c 3A       		.uleb128 0x3a
+ 2113 011d 0B       		.uleb128 0xb
+ 2114 011e 3B       		.uleb128 0x3b
+ 2115 011f 0B       		.uleb128 0xb
+ 2116 0120 27       		.uleb128 0x27
+ 2117 0121 19       		.uleb128 0x19
+ 2118 0122 49       		.uleb128 0x49
+ 2119 0123 13       		.uleb128 0x13
+ 2120 0124 8701     		.uleb128 0x87
+ 2121 0126 19       		.uleb128 0x19
+ 2122 0127 11       		.uleb128 0x11
+ 2123 0128 01       		.uleb128 0x1
+ 2124 0129 12       		.uleb128 0x12
+ 2125 012a 06       		.uleb128 0x6
+ 2126 012b 40       		.uleb128 0x40
+ 2127 012c 18       		.uleb128 0x18
+ 2128 012d 9642     		.uleb128 0x2116
+ 2129 012f 19       		.uleb128 0x19
+ 2130 0130 01       		.uleb128 0x1
+ 2131 0131 13       		.uleb128 0x13
+ 2132 0132 00       		.byte	0
+ 2133 0133 00       		.byte	0
+ 2134 0134 16       		.uleb128 0x16
+ 2135 0135 34       		.uleb128 0x34
+ 2136 0136 00       		.byte	0
+ 2137 0137 03       		.uleb128 0x3
+ 2138 0138 0E       		.uleb128 0xe
+ 2139 0139 3A       		.uleb128 0x3a
+ 2140 013a 0B       		.uleb128 0xb
+ 2141 013b 3B       		.uleb128 0x3b
+ 2142 013c 0B       		.uleb128 0xb
+ 2143 013d 49       		.uleb128 0x49
+ 2144 013e 13       		.uleb128 0x13
+ 2145 013f 00       		.byte	0
+ 2146 0140 00       		.byte	0
+ 2147 0141 17       		.uleb128 0x17
+ 2148 0142 34       		.uleb128 0x34
+ 2149 0143 00       		.byte	0
+ 2150 0144 03       		.uleb128 0x3
+ 2151 0145 0E       		.uleb128 0xe
+ 2152 0146 3A       		.uleb128 0x3a
+ 2153 0147 0B       		.uleb128 0xb
+ 2154 0148 3B       		.uleb128 0x3b
+ 2155 0149 0B       		.uleb128 0xb
+ 2156 014a 49       		.uleb128 0x49
+ 2157 014b 13       		.uleb128 0x13
+ 2158 014c 02       		.uleb128 0x2
+ 2159 014d 18       		.uleb128 0x18
+ 2160 014e 00       		.byte	0
+ 2161 014f 00       		.byte	0
+ 2162 0150 18       		.uleb128 0x18
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 44
+
+
+ 2163 0151 34       		.uleb128 0x34
+ 2164 0152 00       		.byte	0
+ 2165 0153 03       		.uleb128 0x3
+ 2166 0154 08       		.uleb128 0x8
+ 2167 0155 3A       		.uleb128 0x3a
+ 2168 0156 0B       		.uleb128 0xb
+ 2169 0157 3B       		.uleb128 0x3b
+ 2170 0158 0B       		.uleb128 0xb
+ 2171 0159 49       		.uleb128 0x49
+ 2172 015a 13       		.uleb128 0x13
+ 2173 015b 1C       		.uleb128 0x1c
+ 2174 015c 0A       		.uleb128 0xa
+ 2175 015d 00       		.byte	0
+ 2176 015e 00       		.byte	0
+ 2177 015f 19       		.uleb128 0x19
+ 2178 0160 26       		.uleb128 0x26
+ 2179 0161 00       		.byte	0
+ 2180 0162 49       		.uleb128 0x49
+ 2181 0163 13       		.uleb128 0x13
+ 2182 0164 00       		.byte	0
+ 2183 0165 00       		.byte	0
+ 2184 0166 1A       		.uleb128 0x1a
+ 2185 0167 34       		.uleb128 0x34
+ 2186 0168 00       		.byte	0
+ 2187 0169 03       		.uleb128 0x3
+ 2188 016a 0E       		.uleb128 0xe
+ 2189 016b 3A       		.uleb128 0x3a
+ 2190 016c 0B       		.uleb128 0xb
+ 2191 016d 3B       		.uleb128 0x3b
+ 2192 016e 05       		.uleb128 0x5
+ 2193 016f 49       		.uleb128 0x49
+ 2194 0170 13       		.uleb128 0x13
+ 2195 0171 3F       		.uleb128 0x3f
+ 2196 0172 19       		.uleb128 0x19
+ 2197 0173 3C       		.uleb128 0x3c
+ 2198 0174 19       		.uleb128 0x19
+ 2199 0175 00       		.byte	0
+ 2200 0176 00       		.byte	0
+ 2201 0177 1B       		.uleb128 0x1b
+ 2202 0178 35       		.uleb128 0x35
+ 2203 0179 00       		.byte	0
+ 2204 017a 49       		.uleb128 0x49
+ 2205 017b 13       		.uleb128 0x13
+ 2206 017c 00       		.byte	0
+ 2207 017d 00       		.byte	0
+ 2208 017e 1C       		.uleb128 0x1c
+ 2209 017f 34       		.uleb128 0x34
+ 2210 0180 00       		.byte	0
+ 2211 0181 03       		.uleb128 0x3
+ 2212 0182 0E       		.uleb128 0xe
+ 2213 0183 3A       		.uleb128 0x3a
+ 2214 0184 0B       		.uleb128 0xb
+ 2215 0185 3B       		.uleb128 0x3b
+ 2216 0186 0B       		.uleb128 0xb
+ 2217 0187 49       		.uleb128 0x49
+ 2218 0188 13       		.uleb128 0x13
+ 2219 0189 3F       		.uleb128 0x3f
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 45
+
+
+ 2220 018a 19       		.uleb128 0x19
+ 2221 018b 02       		.uleb128 0x2
+ 2222 018c 18       		.uleb128 0x18
+ 2223 018d 00       		.byte	0
+ 2224 018e 00       		.byte	0
+ 2225 018f 1D       		.uleb128 0x1d
+ 2226 0190 2E       		.uleb128 0x2e
+ 2227 0191 00       		.byte	0
+ 2228 0192 3F       		.uleb128 0x3f
+ 2229 0193 19       		.uleb128 0x19
+ 2230 0194 3C       		.uleb128 0x3c
+ 2231 0195 19       		.uleb128 0x19
+ 2232 0196 6E       		.uleb128 0x6e
+ 2233 0197 0E       		.uleb128 0xe
+ 2234 0198 03       		.uleb128 0x3
+ 2235 0199 0E       		.uleb128 0xe
+ 2236 019a 3A       		.uleb128 0x3a
+ 2237 019b 0B       		.uleb128 0xb
+ 2238 019c 3B       		.uleb128 0x3b
+ 2239 019d 0B       		.uleb128 0xb
+ 2240 019e 00       		.byte	0
+ 2241 019f 00       		.byte	0
+ 2242 01a0 1E       		.uleb128 0x1e
+ 2243 01a1 2E       		.uleb128 0x2e
+ 2244 01a2 00       		.byte	0
+ 2245 01a3 3F       		.uleb128 0x3f
+ 2246 01a4 19       		.uleb128 0x19
+ 2247 01a5 3C       		.uleb128 0x3c
+ 2248 01a6 19       		.uleb128 0x19
+ 2249 01a7 6E       		.uleb128 0x6e
+ 2250 01a8 08       		.uleb128 0x8
+ 2251 01a9 03       		.uleb128 0x3
+ 2252 01aa 08       		.uleb128 0x8
+ 2253 01ab 3A       		.uleb128 0x3a
+ 2254 01ac 0B       		.uleb128 0xb
+ 2255 01ad 3B       		.uleb128 0x3b
+ 2256 01ae 0B       		.uleb128 0xb
+ 2257 01af 00       		.byte	0
+ 2258 01b0 00       		.byte	0
+ 2259 01b1 00       		.byte	0
+ 2260              		.section	.debug_loc,"",%progbits
+ 2261              	.Ldebug_loc0:
+ 2262              	.LLST0:
+ 2263 0000 00000000 		.4byte	.LVL0
+ 2264 0004 12000000 		.4byte	.LVL1
+ 2265 0008 0100     		.2byte	0x1
+ 2266 000a 50       		.byte	0x50
+ 2267 000b 12000000 		.4byte	.LVL1
+ 2268 000f 18000000 		.4byte	.LVL3
+ 2269 0013 0400     		.2byte	0x4
+ 2270 0015 F3       		.byte	0xf3
+ 2271 0016 01       		.uleb128 0x1
+ 2272 0017 50       		.byte	0x50
+ 2273 0018 9F       		.byte	0x9f
+ 2274 0019 18000000 		.4byte	.LVL3
+ 2275 001d 1A000000 		.4byte	.LVL4
+ 2276 0021 0100     		.2byte	0x1
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 46
+
+
+ 2277 0023 50       		.byte	0x50
+ 2278 0024 1A000000 		.4byte	.LVL4
+ 2279 0028 70000000 		.4byte	.LFE64
+ 2280 002c 0400     		.2byte	0x4
+ 2281 002e F3       		.byte	0xf3
+ 2282 002f 01       		.uleb128 0x1
+ 2283 0030 50       		.byte	0x50
+ 2284 0031 9F       		.byte	0x9f
+ 2285 0032 00000000 		.4byte	0
+ 2286 0036 00000000 		.4byte	0
+ 2287              	.LLST1:
+ 2288 003a 00000000 		.4byte	.LVL15
+ 2289 003e 06000000 		.4byte	.LVL16
+ 2290 0042 0100     		.2byte	0x1
+ 2291 0044 50       		.byte	0x50
+ 2292 0045 06000000 		.4byte	.LVL16
+ 2293 0049 36000000 		.4byte	.LFE66
+ 2294 004d 0400     		.2byte	0x4
+ 2295 004f F3       		.byte	0xf3
+ 2296 0050 01       		.uleb128 0x1
+ 2297 0051 50       		.byte	0x50
+ 2298 0052 9F       		.byte	0x9f
+ 2299 0053 00000000 		.4byte	0
+ 2300 0057 00000000 		.4byte	0
+ 2301              	.LLST2:
+ 2302 005b 00000000 		.4byte	.LVL31
+ 2303 005f 06000000 		.4byte	.LVL32
+ 2304 0063 0100     		.2byte	0x1
+ 2305 0065 50       		.byte	0x50
+ 2306 0066 06000000 		.4byte	.LVL32
+ 2307 006a 48000000 		.4byte	.LFE67
+ 2308 006e 0400     		.2byte	0x4
+ 2309 0070 F3       		.byte	0xf3
+ 2310 0071 01       		.uleb128 0x1
+ 2311 0072 50       		.byte	0x50
+ 2312 0073 9F       		.byte	0x9f
+ 2313 0074 00000000 		.4byte	0
+ 2314 0078 00000000 		.4byte	0
+ 2315              	.LLST3:
+ 2316 007c 00000000 		.4byte	.LVL44
+ 2317 0080 0A000000 		.4byte	.LVL46
+ 2318 0084 0100     		.2byte	0x1
+ 2319 0086 50       		.byte	0x50
+ 2320 0087 0A000000 		.4byte	.LVL46
+ 2321 008b 18000000 		.4byte	.LFE68
+ 2322 008f 0100     		.2byte	0x1
+ 2323 0091 56       		.byte	0x56
+ 2324 0092 00000000 		.4byte	0
+ 2325 0096 00000000 		.4byte	0
+ 2326              	.LLST4:
+ 2327 009a 00000000 		.4byte	.LVL44
+ 2328 009e 0A000000 		.4byte	.LVL46
+ 2329 00a2 0100     		.2byte	0x1
+ 2330 00a4 51       		.byte	0x51
+ 2331 00a5 0A000000 		.4byte	.LVL46
+ 2332 00a9 18000000 		.4byte	.LFE68
+ 2333 00ad 0400     		.2byte	0x4
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 47
+
+
+ 2334 00af F3       		.byte	0xf3
+ 2335 00b0 01       		.uleb128 0x1
+ 2336 00b1 51       		.byte	0x51
+ 2337 00b2 9F       		.byte	0x9f
+ 2338 00b3 00000000 		.4byte	0
+ 2339 00b7 00000000 		.4byte	0
+ 2340              	.LLST5:
+ 2341 00bb 06000000 		.4byte	.LVL45
+ 2342 00bf 0A000000 		.4byte	.LVL46
+ 2343 00c3 0200     		.2byte	0x2
+ 2344 00c5 30       		.byte	0x30
+ 2345 00c6 9F       		.byte	0x9f
+ 2346 00c7 0A000000 		.4byte	.LVL46
+ 2347 00cb 18000000 		.4byte	.LFE68
+ 2348 00cf 0100     		.2byte	0x1
+ 2349 00d1 54       		.byte	0x54
+ 2350 00d2 00000000 		.4byte	0
+ 2351 00d6 00000000 		.4byte	0
+ 2352              	.LLST6:
+ 2353 00da 00000000 		.4byte	.LVL49
+ 2354 00de 08000000 		.4byte	.LVL51
+ 2355 00e2 0100     		.2byte	0x1
+ 2356 00e4 50       		.byte	0x50
+ 2357 00e5 08000000 		.4byte	.LVL51
+ 2358 00e9 16000000 		.4byte	.LFE69
+ 2359 00ed 0100     		.2byte	0x1
+ 2360 00ef 55       		.byte	0x55
+ 2361 00f0 00000000 		.4byte	0
+ 2362 00f4 00000000 		.4byte	0
+ 2363              	.LLST7:
+ 2364 00f8 00000000 		.4byte	.LVL49
+ 2365 00fc 08000000 		.4byte	.LVL51
+ 2366 0100 0100     		.2byte	0x1
+ 2367 0102 51       		.byte	0x51
+ 2368 0103 08000000 		.4byte	.LVL51
+ 2369 0107 16000000 		.4byte	.LFE69
+ 2370 010b 0400     		.2byte	0x4
+ 2371 010d F3       		.byte	0xf3
+ 2372 010e 01       		.uleb128 0x1
+ 2373 010f 51       		.byte	0x51
+ 2374 0110 9F       		.byte	0x9f
+ 2375 0111 00000000 		.4byte	0
+ 2376 0115 00000000 		.4byte	0
+ 2377              	.LLST8:
+ 2378 0119 04000000 		.4byte	.LVL50
+ 2379 011d 08000000 		.4byte	.LVL51
+ 2380 0121 0200     		.2byte	0x2
+ 2381 0123 30       		.byte	0x30
+ 2382 0124 9F       		.byte	0x9f
+ 2383 0125 08000000 		.4byte	.LVL51
+ 2384 0129 16000000 		.4byte	.LFE69
+ 2385 012d 0100     		.2byte	0x1
+ 2386 012f 54       		.byte	0x54
+ 2387 0130 00000000 		.4byte	0
+ 2388 0134 00000000 		.4byte	0
+ 2389              	.LLST9:
+ 2390 0138 00000000 		.4byte	.LVL54
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 48
+
+
+ 2391 013c 04000000 		.4byte	.LVL55
+ 2392 0140 0200     		.2byte	0x2
+ 2393 0142 30       		.byte	0x30
+ 2394 0143 9F       		.byte	0x9f
+ 2395 0144 04000000 		.4byte	.LVL55
+ 2396 0148 0C000000 		.4byte	.LFE71
+ 2397 014c 0100     		.2byte	0x1
+ 2398 014e 53       		.byte	0x53
+ 2399 014f 00000000 		.4byte	0
+ 2400 0153 00000000 		.4byte	0
+ 2401              		.section	.debug_aranges,"",%progbits
+ 2402 0000 6C000000 		.4byte	0x6c
+ 2403 0004 0200     		.2byte	0x2
+ 2404 0006 00000000 		.4byte	.Ldebug_info0
+ 2405 000a 04       		.byte	0x4
+ 2406 000b 00       		.byte	0
+ 2407 000c 0000     		.2byte	0
+ 2408 000e 0000     		.2byte	0
+ 2409 0010 00000000 		.4byte	.LFB64
+ 2410 0014 70000000 		.4byte	.LFE64-.LFB64
+ 2411 0018 00000000 		.4byte	.LFB70
+ 2412 001c 16000000 		.4byte	.LFE70-.LFB70
+ 2413 0020 00000000 		.4byte	.LFB66
+ 2414 0024 36000000 		.4byte	.LFE66-.LFB66
+ 2415 0028 00000000 		.4byte	.LFB65
+ 2416 002c 28000000 		.4byte	.LFE65-.LFB65
+ 2417 0030 00000000 		.4byte	.LFB67
+ 2418 0034 48000000 		.4byte	.LFE67-.LFB67
+ 2419 0038 00000000 		.4byte	.LFB68
+ 2420 003c 18000000 		.4byte	.LFE68-.LFB68
+ 2421 0040 00000000 		.4byte	.LFB69
+ 2422 0044 16000000 		.4byte	.LFE69-.LFB69
+ 2423 0048 00000000 		.4byte	.LFB71
+ 2424 004c 0C000000 		.4byte	.LFE71-.LFB71
+ 2425 0050 00000000 		.4byte	.LFB72
+ 2426 0054 64000000 		.4byte	.LFE72-.LFB72
+ 2427 0058 00000000 		.4byte	.LFB73
+ 2428 005c CC000000 		.4byte	.LFE73-.LFB73
+ 2429 0060 00000000 		.4byte	.LFB74
+ 2430 0064 70000000 		.4byte	.LFE74-.LFB74
+ 2431 0068 00000000 		.4byte	0
+ 2432 006c 00000000 		.4byte	0
+ 2433              		.section	.debug_ranges,"",%progbits
+ 2434              	.Ldebug_ranges0:
+ 2435 0000 00000000 		.4byte	.LFB64
+ 2436 0004 70000000 		.4byte	.LFE64
+ 2437 0008 00000000 		.4byte	.LFB70
+ 2438 000c 16000000 		.4byte	.LFE70
+ 2439 0010 00000000 		.4byte	.LFB66
+ 2440 0014 36000000 		.4byte	.LFE66
+ 2441 0018 00000000 		.4byte	.LFB65
+ 2442 001c 28000000 		.4byte	.LFE65
+ 2443 0020 00000000 		.4byte	.LFB67
+ 2444 0024 48000000 		.4byte	.LFE67
+ 2445 0028 00000000 		.4byte	.LFB68
+ 2446 002c 18000000 		.4byte	.LFE68
+ 2447 0030 00000000 		.4byte	.LFB69
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 49
+
+
+ 2448 0034 16000000 		.4byte	.LFE69
+ 2449 0038 00000000 		.4byte	.LFB71
+ 2450 003c 0C000000 		.4byte	.LFE71
+ 2451 0040 00000000 		.4byte	.LFB72
+ 2452 0044 64000000 		.4byte	.LFE72
+ 2453 0048 00000000 		.4byte	.LFB73
+ 2454 004c CC000000 		.4byte	.LFE73
+ 2455 0050 00000000 		.4byte	.LFB74
+ 2456 0054 70000000 		.4byte	.LFE74
+ 2457 0058 00000000 		.4byte	0
+ 2458 005c 00000000 		.4byte	0
+ 2459              		.section	.debug_line,"",%progbits
+ 2460              	.Ldebug_line0:
+ 2461 0000 57030000 		.section	.debug_str,"MS",%progbits,1
+ 2461      02000902 
+ 2461      00000201 
+ 2461      FB0E0D00 
+ 2461      01010101 
+ 2462              	.LASF51:
+ 2463 0000 44355F50 		.ascii	"D5_Pin_12_Write\000"
+ 2463      696E5F31 
+ 2463      325F5772 
+ 2463      69746500 
+ 2464              	.LASF38:
+ 2465 0010 52315F56 		.ascii	"R1_Volt_Float\000"
+ 2465      6F6C745F 
+ 2465      466C6F61 
+ 2465      7400
+ 2466              	.LASF39:
+ 2467 001e 52315F41 		.ascii	"R1_ADC_Result\000"
+ 2467      44435F52 
+ 2467      6573756C 
+ 2467      7400
+ 2468              	.LASF44:
+ 2469 002c 74686572 		.ascii	"thermistor_Result_float\000"
+ 2469      6D697374 
+ 2469      6F725F52 
+ 2469      6573756C 
+ 2469      745F666C 
+ 2470              	.LASF17:
+ 2471 0044 73697A65 		.ascii	"sizetype\000"
+ 2471      74797065 
+ 2471      00
+ 2472              	.LASF29:
+ 2473 004d 4C43445F 		.ascii	"LCD_Write_String\000"
+ 2473      57726974 
+ 2473      655F5374 
+ 2473      72696E67 
+ 2473      00
+ 2474              	.LASF14:
+ 2475 005e 63686172 		.ascii	"char8\000"
+ 2475      3800
+ 2476              	.LASF70:
+ 2477 0064 6D61696E 		.ascii	"main\000"
+ 2477      00
+ 2478              	.LASF69:
+ 2479 0069 433A5C55 		.ascii	"C:\\Users\\Ryans\\Documents\\PSoC Creator\\Thermist"
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 50
+
+
+ 2479      73657273 
+ 2479      5C527961 
+ 2479      6E735C44 
+ 2479      6F63756D 
+ 2480 0097 6F725F6C 		.ascii	"or_lab\\Thermistor project.cydsn\000"
+ 2480      61625C54 
+ 2480      6865726D 
+ 2480      6973746F 
+ 2480      72207072 
+ 2481              	.LASF2:
+ 2482 00b7 73686F72 		.ascii	"short int\000"
+ 2482      7420696E 
+ 2482      7400
+ 2483              	.LASF49:
+ 2484 00c1 44617461 		.ascii	"DataLine\000"
+ 2484      4C696E65 
+ 2484      00
+ 2485              	.LASF61:
+ 2486 00ca 4144435F 		.ascii	"ADC_DelSig_1_IsEndConversion\000"
+ 2486      44656C53 
+ 2486      69675F31 
+ 2486      5F497345 
+ 2486      6E64436F 
+ 2487              	.LASF11:
+ 2488 00e7 696E7431 		.ascii	"int16\000"
+ 2488      3600
+ 2489              	.LASF19:
+ 2490 00ed 44355F50 		.ascii	"D5_Pin\000"
+ 2490      696E00
+ 2491              	.LASF62:
+ 2492 00f4 4144435F 		.ascii	"ADC_DelSig_1_GetResult16\000"
+ 2492      44656C53 
+ 2492      69675F31 
+ 2492      5F476574 
+ 2492      52657375 
+ 2493              	.LASF12:
+ 2494 010d 666C6F61 		.ascii	"float\000"
+ 2494      7400
+ 2495              	.LASF36:
+ 2496 0113 74686572 		.ascii	"therm_Temp\000"
+ 2496      6D5F5465 
+ 2496      6D7000
+ 2497              	.LASF6:
+ 2498 011e 6C6F6E67 		.ascii	"long long int\000"
+ 2498      206C6F6E 
+ 2498      6720696E 
+ 2498      7400
+ 2499              	.LASF20:
+ 2500 012c 44365F50 		.ascii	"D6_Pin\000"
+ 2500      696E00
+ 2501              	.LASF23:
+ 2502 0133 4C43445F 		.ascii	"LCD_Print_Data\000"
+ 2502      5072696E 
+ 2502      745F4461 
+ 2502      746100
+ 2503              	.LASF57:
+ 2504 0142 525F575F 		.ascii	"R_W_Pin_5_Write\000"
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 51
+
+
+ 2504      50696E5F 
+ 2504      355F5772 
+ 2504      69746500 
+ 2505              	.LASF54:
+ 2506 0152 456E6162 		.ascii	"Enable_Pin_6_Write\000"
+ 2506      6C655F50 
+ 2506      696E5F36 
+ 2506      5F577269 
+ 2506      746500
+ 2507              	.LASF4:
+ 2508 0165 6C6F6E67 		.ascii	"long int\000"
+ 2508      20696E74 
+ 2508      00
+ 2509              	.LASF47:
+ 2510 016e 62756666 		.ascii	"buffer2\000"
+ 2510      65723200 
+ 2511              	.LASF37:
+ 2512 0176 52315F56 		.ascii	"R1_Voltage\000"
+ 2512      6F6C7461 
+ 2512      676500
+ 2513              	.LASF34:
+ 2514 0181 64656C61 		.ascii	"delayTime\000"
+ 2514      7954696D 
+ 2514      6500
+ 2515              	.LASF52:
+ 2516 018b 44365F50 		.ascii	"D6_Pin_13_Write\000"
+ 2516      696E5F31 
+ 2516      335F5772 
+ 2516      69746500 
+ 2517              	.LASF40:
+ 2518 019b 746F7461 		.ascii	"totalCurrent\000"
+ 2518      6C437572 
+ 2518      72656E74 
+ 2518      00
+ 2519              	.LASF56:
+ 2520 01a8 52535F50 		.ascii	"RS_Pin_4_Write\000"
+ 2520      696E5F34 
+ 2520      5F577269 
+ 2520      746500
+ 2521              	.LASF16:
+ 2522 01b7 6C6F6E67 		.ascii	"long double\000"
+ 2522      20646F75 
+ 2522      626C6500 
+ 2523              	.LASF32:
+ 2524 01c3 4C43445F 		.ascii	"LCD_Write_Num\000"
+ 2524      57726974 
+ 2524      655F4E75 
+ 2524      6D00
+ 2525              	.LASF58:
+ 2526 01d1 43794465 		.ascii	"CyDelayUs\000"
+ 2526      6C617955 
+ 2526      7300
+ 2527              	.LASF1:
+ 2528 01db 756E7369 		.ascii	"unsigned char\000"
+ 2528      676E6564 
+ 2528      20636861 
+ 2528      7200
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 52
+
+
+ 2529              	.LASF66:
+ 2530 01e9 73707269 		.ascii	"sprintf\000"
+ 2530      6E746600 
+ 2531              	.LASF28:
+ 2532 01f1 4C43445F 		.ascii	"LCD_Write_Data\000"
+ 2532      57726974 
+ 2532      655F4461 
+ 2532      746100
+ 2533              	.LASF0:
+ 2534 0200 7369676E 		.ascii	"signed char\000"
+ 2534      65642063 
+ 2534      68617200 
+ 2535              	.LASF46:
+ 2536 020c 62756666 		.ascii	"buffer1\000"
+ 2536      65723100 
+ 2537              	.LASF7:
+ 2538 0214 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 2538      206C6F6E 
+ 2538      6720756E 
+ 2538      7369676E 
+ 2538      65642069 
+ 2539              	.LASF8:
+ 2540 022b 756E7369 		.ascii	"unsigned int\000"
+ 2540      676E6564 
+ 2540      20696E74 
+ 2540      00
+ 2541              	.LASF50:
+ 2542 0238 44345F50 		.ascii	"D4_Pin_11_Write\000"
+ 2542      696E5F31 
+ 2542      315F5772 
+ 2542      69746500 
+ 2543              	.LASF22:
+ 2544 0248 44617461 		.ascii	"Datapins\000"
+ 2544      70696E73 
+ 2544      00
+ 2545              	.LASF24:
+ 2546 0251 4C43445F 		.ascii	"LCD_Pulse\000"
+ 2546      50756C73 
+ 2546      6500
+ 2547              	.LASF60:
+ 2548 025b 4144435F 		.ascii	"ADC_DelSig_1_StartConvert\000"
+ 2548      44656C53 
+ 2548      69675F31 
+ 2548      5F537461 
+ 2548      7274436F 
+ 2549              	.LASF64:
+ 2550 0275 4144435F 		.ascii	"ADC_DelSig_1_Start\000"
+ 2550      44656C53 
+ 2550      69675F31 
+ 2550      5F537461 
+ 2550      727400
+ 2551              	.LASF65:
+ 2552 0288 414D7578 		.ascii	"AMux_1_Start\000"
+ 2552      5F315F53 
+ 2552      74617274 
+ 2552      00
+ 2553              	.LASF33:
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 53
+
+
+ 2554 0295 6D696372 		.ascii	"microSecondDelay\000"
+ 2554      6F536563 
+ 2554      6F6E6444 
+ 2554      656C6179 
+ 2554      00
+ 2555              	.LASF15:
+ 2556 02a6 63686172 		.ascii	"char\000"
+ 2556      00
+ 2557              	.LASF10:
+ 2558 02ab 696E7433 		.ascii	"int32_t\000"
+ 2558      325F7400 
+ 2559              	.LASF3:
+ 2560 02b3 73686F72 		.ascii	"short unsigned int\000"
+ 2560      7420756E 
+ 2560      7369676E 
+ 2560      65642069 
+ 2560      6E7400
+ 2561              	.LASF27:
+ 2562 02c6 4C43445F 		.ascii	"LCD_Init\000"
+ 2562      496E6974 
+ 2562      00
+ 2563              	.LASF30:
+ 2564 02cf 77726974 		.ascii	"writedata\000"
+ 2564      65646174 
+ 2564      6100
+ 2565              	.LASF26:
+ 2566 02d9 64617461 		.ascii	"data\000"
+ 2566      00
+ 2567              	.LASF68:
+ 2568 02de 6D61696E 		.ascii	"main.c\000"
+ 2568      2E6300
+ 2569              	.LASF5:
+ 2570 02e5 6C6F6E67 		.ascii	"long unsigned int\000"
+ 2570      20756E73 
+ 2570      69676E65 
+ 2570      6420696E 
+ 2570      7400
+ 2571              	.LASF59:
+ 2572 02f7 414D7578 		.ascii	"AMux_1_Select\000"
+ 2572      5F315F53 
+ 2572      656C6563 
+ 2572      7400
+ 2573              	.LASF41:
+ 2574 0305 74686572 		.ascii	"thermistor_voltage\000"
+ 2574      6D697374 
+ 2574      6F725F76 
+ 2574      6F6C7461 
+ 2574      676500
+ 2575              	.LASF43:
+ 2576 0318 74686572 		.ascii	"thermistor_ADC_Result\000"
+ 2576      6D697374 
+ 2576      6F725F41 
+ 2576      44435F52 
+ 2576      6573756C 
+ 2577              	.LASF35:
+ 2578 032e 74686572 		.ascii	"thermistorResistance\000"
+ 2578      6D697374 
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 54
+
+
+ 2578      6F725265 
+ 2578      73697374 
+ 2578      616E6365 
+ 2579              	.LASF53:
+ 2580 0343 44375F50 		.ascii	"D7_Pin_14_Write\000"
+ 2580      696E5F31 
+ 2580      345F5772 
+ 2580      69746500 
+ 2581              	.LASF63:
+ 2582 0353 4144435F 		.ascii	"ADC_DelSig_1_CountsTo_mVolts\000"
+ 2582      44656C53 
+ 2582      69675F31 
+ 2582      5F436F75 
+ 2582      6E747354 
+ 2583              	.LASF9:
+ 2584 0370 5F5F696E 		.ascii	"__int32_t\000"
+ 2584      7433325F 
+ 2584      7400
+ 2585              	.LASF42:
+ 2586 037a 74686572 		.ascii	"thermistor_resistance\000"
+ 2586      6D697374 
+ 2586      6F725F72 
+ 2586      65736973 
+ 2586      74616E63 
+ 2587              	.LASF45:
+ 2588 0390 54656D70 		.ascii	"Temperature\000"
+ 2588      65726174 
+ 2588      75726500 
+ 2589              	.LASF13:
+ 2590 039c 646F7562 		.ascii	"double\000"
+ 2590      6C6500
+ 2591              	.LASF25:
+ 2592 03a3 4C43445F 		.ascii	"LCD_Command\000"
+ 2592      436F6D6D 
+ 2592      616E6400 
+ 2593              	.LASF18:
+ 2594 03af 44345F50 		.ascii	"D4_Pin\000"
+ 2594      696E00
+ 2595              	.LASF48:
+ 2596 03b6 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 2596      52784275 
+ 2596      66666572 
+ 2596      00
+ 2597              	.LASF67:
+ 2598 03c3 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 2598      43313120 
+ 2598      352E342E 
+ 2598      31203230 
+ 2598      31363036 
+ 2599 03f6 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 2599      20726576 
+ 2599      6973696F 
+ 2599      6E203233 
+ 2599      37373135 
+ 2600 0429 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 2600      66756E63 
+ 2600      74696F6E 
+ARM GAS  C:\Users\Ryans\AppData\Local\Temp\ccumKL8v.s 			page 55
+
+
+ 2600      2D736563 
+ 2600      74696F6E 
+ 2601              	.LASF55:
+ 2602 0451 43794465 		.ascii	"CyDelay\000"
+ 2602      6C617900 
+ 2603              	.LASF21:
+ 2604 0459 44375F50 		.ascii	"D7_Pin\000"
+ 2604      696E00
+ 2605              	.LASF31:
+ 2606 0460 6C656E67 		.ascii	"length\000"
+ 2606      746800
+ 2607              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
