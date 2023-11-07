@@ -21,9 +21,21 @@ We relate the temperature to resistance on the thermistor by using the datasheet
 ![steinhart](https://github.com/Ryannscotty/Thermistor-LCD-Interface/assets/97707478/c19a3e46-47aa-4ec4-a066-3adb0f0e082b)
 
 
+The 16x2 bit LCD Screen contains 2 register stacks which controls the data and the command instuctions for formatting the data. The timing is very important when configuring the LCD because certain bits need to be wriitten to the registers to enable data to be sent,recieved or changed. 
+
+![LCD](https://github.com/Ryannscotty/Thermistor-LCD-Interface/assets/97707478/c27e4ccb-507a-490f-94ce-a6a619ee2bf2)
+
+The microcontroller choosen for this project was the PSoC 5LP from Infineon technologies, this MCU is the industry’s most integrated programmable SoC, combining high-precision and programmable analog and digital peripherals with an ARM Cortex-M3 CPU in a single chip. Process sensor signals with the 24-bit hardware DFB coprocessor, offload traditional CPU tasks to the CPLD-based Universal Digital Blocks and increase system performance with the peripheral-to-peripheral DMA controller. Integrate high-precision custom 20-bit Analog Front Ends with the Programmable Analog Blocks including opamps, PGAs, filters, comparators, SAR and Delta-Sigma ADCs and the industry's best CAPSENSE™ touch-sensing solution.
+
+
+![mcu](https://github.com/Ryannscotty/Thermistor-LCD-Interface/assets/97707478/1a18d05b-dc20-4907-aa33-1436cd4d4f88)
 
 
 
+This was the final result to the project, with everything fully implemented and functioning.
+
+
+![circuit](https://github.com/Ryannscotty/Thermistor-LCD-Interface/assets/97707478/6f6f4ee6-a9cc-40c9-9e0d-e4e8372bb5d8)
 
 
 
