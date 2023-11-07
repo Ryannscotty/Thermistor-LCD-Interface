@@ -6,8 +6,22 @@ During this project I will be using a Thermistor temperature sensor to measure t
 
 Top-Level Design
 
+
+
+
 We use temperature sensors all the time, they are usually im most consumer products and help a lot of applications maintain there stability. There are many types of temperature sensors on the market and one of the most commonly used ones are Thermistors. 
 Thermistors are sensors on a chip, they are often created using metal-oxide materials and have the ability to have an large resistance change for a small temperature change, these sensors are mostly non-linear and often have a negative temperature coefficient. with temperature measurment ranges between -50 to 200 degrees celcius. 
+
+![thermistor](https://github.com/Ryannscotty/Thermistor-LCD-Interface/assets/97707478/327bf2b9-1709-4bcf-acd0-77c0d294d39c)
+
+
+
+We relate the temperature to resistance on the thermistor by using the datasheet and also by the use of the Steinhart-Hart temperature equation, this equation gives us the proper cnversion of Temperature vs Resistance, the high changes in resistance can tell us the accurate change of temperature when applying this equation to the values being read from the ADC of the PSoc MCU. 
+
+![steinhart](https://github.com/Ryannscotty/Thermistor-LCD-Interface/assets/97707478/c19a3e46-47aa-4ec4-a066-3adb0f0e082b)
+
+
+
 
 
 
